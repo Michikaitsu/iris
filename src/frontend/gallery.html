@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - L.O.O.M.</title>
+    <link rel="icon" type="image/png" href="static/assets/favico.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* Matching dark mode theme with main page */
+        * { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #e5e5e5;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(147, 51, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.1);
+        }
+        
+        header {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        input {
+            width: 100%;
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-size: 14px;
+            color: #e5e5e5;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #9333ea;
+            background: rgba(30, 30, 30, 0.95);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+        
+        input::placeholder {
+            color: #666;
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(147, 51, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(147, 51, 234, 0.3);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: rgba(147, 51, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-card .label {
+            font-size: 0.875rem;
+            color: #999;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #e5e5e5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            border-color: #9333ea;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+        
+        .filter-btn:hover {
+            border-color: rgba(147, 51, 234, 0.5);
+            background: rgba(147, 51, 234, 0.2);
+        }
+        
+        .image-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            aspect-ratio: 1;
+        }
+        
+        .image-card:hover {
+            border-color: #9333ea;
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.3);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+        
+        .image-card:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .image-overlay button {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .image-overlay button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.5);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 3rem 2rem 2rem 2rem;
+        }
+        
+        .modal-image {
+            max-width: 100%;
+            max-height: 65vh;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+        }
+        
+        .modal-info {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-size: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .modal-info div {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+        
+        .modal-info span:first-child {
+            color: #9333ea;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 0;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        
+        .close-btn:hover {
+            color: #9333ea;
+            transform: scale(1.1);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(147, 51, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(147, 51, 234, 0.7);
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container mx-auto flex justify-between items-center">
+            <h1>Gallery - L.O.O.M.</h1>
+            <a href="/" class="btn btn-secondary">← Generator</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto">
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="totalImages">0</div>
+                <div class="label">Total Images</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="generatedCount">0</div>
+                <div class="label">Generated</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="upscaledCount">0</div>
+                <div class="label">Upscaled</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="variationCount">0</div>
+                <div class="label">Variations</div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="card mb-6">
+            <div class="mb-4">
+                <input type="text" id="searchInput" placeholder="Search by filename or seed...">
+            </div>
+            <div class="search-container">
+                <button class="filter-btn active" onclick="filterByType('all')">All</button>
+                <button class="filter-btn" onclick="filterByType('generated')">Generated</button>
+                <button class="filter-btn" onclick="filterByType('variation')">Variations</button>
+                <button class="filter-btn" onclick="filterByType('upscaled')">Upscaled</button>
+            </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-8">
+            <div class="col-span-full text-center py-12">
+                <div class="text-5xl mb-4">📂</div>
+                <div class="text-gray-400">Loading images...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <img id="modalImage" class="modal-image" />
+            <div class="modal-info" id="modalInfo"></div>
+            <div class="flex gap-3 justify-center">
+                <button class="btn btn-primary" onclick="downloadImage()">Download</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let allImages = [];
+        let currentFilter = 'all';
+        let currentImage = null;
+
+        async function loadGallery() {
+            try {
+                const response = await fetch(API_URL + '/output-gallery');
+                const data = await response.json();
+                
+                allImages = data.images || [];
+                updateStats();
+                renderGallery();
+            } catch (error) {
+                console.error('Failed to load gallery:', error);
+                document.getElementById('galleryGrid').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="text-5xl mb-4">❌</div>
+                        <div class="text-red-400">Failed to load images</div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats() {
+            const total = allImages.length;
+            const generated = allImages.filter(f => {
+                const meta = extractMetadata(f);
+                return meta.type === 'generated';
+            }).length;
+            const upscaled = allImages.filter(f => {
+                const meta = extractMetadata(f);
+                return meta.type === 'upscaled';
+            }).length;
+            const variations = allImages.filter(f => {
+                const meta = extractMetadata(f);
+                return meta.type === 'variation';
+            }).length;
+            
+            document.getElementById('totalImages').textContent = total;
+            document.getElementById('generatedCount').textContent = generated;
+            document.getElementById('upscaledCount').textContent = upscaled;
+            document.getElementById('variationCount').textContent = variations;
+        }
+
+        function extractMetadata(filename) {
+            const name = filename.replace('.png', '');
+            const parts = name.split('_');
+            
+            const metadata = {
+                type: 'unknown',
+                date: null,
+                time: null,
+                seed: null,
+                scale: null
+            };
+            
+            if (parts.length >= 4) {
+                const typePrefix = parts[0];
+                
+                if (typePrefix === 'gen') {
+                    metadata.type = 'generated';
+                } else if (typePrefix === 'var') {
+                    metadata.type = 'variation';
+                } else if (typePrefix.startsWith('up')) {
+                    metadata.type = 'upscaled';
+                    const scaleMatch = typePrefix.match(/up(\d+)x/);
+                    if (scaleMatch) {
+                        metadata.scale = parseInt(scaleMatch[1]);
+                    }
+                }
+                
+                metadata.date = parts[1] || null;
+                metadata.time = parts[2] || null;
+                metadata.seed = parts[3] && !isNaN(parts[3]) ? parseInt(parts[3]) : null;
+            }
+            
+            // Fallback for old format
+            if (metadata.type === 'unknown') {
+                if (filename.startsWith('generated_')) metadata.type = 'generated';
+                else if (filename.startsWith('variation_')) metadata.type = 'variation';
+                else if (filename.startsWith('upscaled')) metadata.type = 'upscaled';
+                
+                // Try to extract seed from old format
+                const seedMatch = filename.match(/_(\d{4,})_/);
+                if (seedMatch) metadata.seed = parseInt(seedMatch[1]);
+            }
+            
+            return metadata;
+        }
+
+        function getImageType(filename) {
+            return extractMetadata(filename).type;
+        }
+
+        function filterByType(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = allImages.filter(img => {
+                const matchesFilter = currentFilter === 'all' || getImageType(img) === currentFilter;
+                const matchesSearch = img.toLowerCase().includes(searchTerm);
+                return matchesFilter && matchesSearch;
+            });
+
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            if (filtered.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="text-5xl mb-4">📭</div>
+                        <div class="text-gray-400">No images found</div>
+                    </div>
+                `;
+                return;
+            }
+
+            galleryGrid.innerHTML = '';
+            filtered.forEach(filename => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                const metadata = extractMetadata(filename);
+                const type = metadata.type;
+                const seed = metadata.seed || 'unknown';
+                
+                const typeEmoji = {
+                    'generated': '🎨',
+                    'upscaled': '⬆️',
+                    'variation': '🔀',
+                    'unknown': '❓'
+                }[type] || '❓';
+                
+                let dateStr = 'Unknown';
+                if (metadata.date && metadata.time) {
+                    const date = metadata.date;
+                    const time = metadata.time;
+                    dateStr = `${date} ${time.substring(0,2)}:${time.substring(2,4)}`;
+                } else {
+                    dateStr = filename.substring(0, 25);
+                }
+                
+                card.innerHTML = `
+                    <img src="${API_URL}/output-image/${filename}" alt="${filename}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23333%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EError%3C/text%3E%3C/svg%3E'" />
+                    <div class="image-overlay">
+                        <div class="text-white text-center">
+                            <div class="text-3xl mb-2">${typeEmoji}</div>
+                            <div class="text-xs text-gray-300 mb-2">${dateStr}</div>
+                            <div class="text-xs font-mono" style="color: #9333ea;">Seed: ${seed}</div>
+                        </div>
+                        <button onclick="openModal('${filename}', '${seed}', '${type}', '${metadata.date}', '${metadata.time}', ${metadata.scale})">View Full</button>
+                    </div>
+                `;
+                
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        function openModal(filename, seed, type, date, time, scale) {
+            currentImage = { filename, seed, type, date, time, scale };
+            document.getElementById('modalImage').src = API_URL + `/output-image/${filename}`;
+            
+            const typeEmoji = {
+                'generated': '🎨 Generated',
+                'upscaled': '⬆️ Upscaled',
+                'variation': '🔀 Variation',
+                'unknown': '❓ Unknown'
+            }[type] || 'Unknown';
+            
+            let dateTimeStr = 'Unknown';
+            if (date && date !== 'null' && time && time !== 'null') {
+                dateTimeStr = `${date} ${time.substring(0,2)}:${time.substring(2,4)}:${time.substring(4,6)}`;
+            }
+            
+            let infoHTML = `
+                <div>
+                    <span>Filename</span>
+                    <span class="text-right break-words text-gray-300">${filename}</span>
+                </div>
+                <div>
+                    <span>Type</span>
+                    <span class="text-right text-gray-300">${typeEmoji}</span>
+                </div>
+                <div>
+                    <span>Seed</span>
+                    <span class="text-right font-mono text-gray-300">${seed}</span>
+                </div>
+                <div>
+                    <span>Created</span>
+                    <span class="text-right text-gray-300">${dateTimeStr}</span>
+                </div>
+            `;
+            
+            if (scale && scale !== 'null') {
+                infoHTML += `
+                    <div>
+                        <span>Scale</span>
+                        <span class="text-right text-gray-300">${scale}x</span>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('modalInfo').innerHTML = infoHTML;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            currentImage = null;
+        }
+
+        function downloadImage() {
+            if (!currentImage) return;
+            const link = document.createElement('a');
+            link.href = API_URL + `/output-image/${currentImage.filename}`;
+            link.download = currentImage.filename;
+            link.click();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderGallery();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        loadGallery();
+        setInterval(loadGallery, 10000);
+    </script>
+</body>
+</html>

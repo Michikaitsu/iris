@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L.O.O.M.</title>
+    <link rel="icon" type="image/png" href="static/assets/favico.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Dark mode color scheme with purple/blue accents */
+        body {
+            background: #0a0a0a;
+            color: #e5e5e5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: rgba(26, 26, 26, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(147, 51, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.1);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-size: 14px;
+            color: #e5e5e5;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #9333ea;
+            background: rgba(30, 30, 30, 0.95);
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #666;
+        }
+        
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%239333ea' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            padding-right: 2.5rem;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(147, 51, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e5e5e5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(147, 51, 234, 0.3);
+        }
+        
+        .label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9333ea;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .preview-area {
+            background: rgba(15, 15, 15, 0.5);
+            border: 2px dashed rgba(147, 51, 234, 0.3);
+            border-radius: 16px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .preview-area img {
+            max-width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9333ea 0%, #7c3aed 50%, #9333ea 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            transition: width 0.3s ease;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .gallery-item {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .gallery-item:hover {
+            border-color: #9333ea;
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(147, 51, 234, 0.3);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+            animation: pulse 2s infinite;
+        }
+        
+        .badge-dot.warning {
+            background: #f59e0b;
+            box-shadow: 0 0 10px #f59e0b;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(147, 51, 234, 0.5);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(147, 51, 234, 0.5);
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(147, 51, 234, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(147, 51, 234, 0.7);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        details summary {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #9333ea;
+            padding: 0.5rem 0;
+            user-select: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        details[open] summary {
+            margin-bottom: 1rem;
+        }
+        
+        .warning-text {
+            font-size: 12px;
+            color: #f59e0b;
+            margin-top: 0.5rem;
+        }
+        
+        .generating {
+            position: relative;
+        }
+        
+        .generating::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(147, 51, 234, 0.2);
+            border-top-color: #9333ea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="card mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold mb-1">L.O.O.M.</h1>
+                    <p class="text-sm text-gray-500">Local Operator of Open Minds</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="badge">
+                        <span id="gpuStatusDot" class="badge-dot"></span>
+                        <span id="gpuStatusText">Ready</span>
+                    </div>
+                    <div class="badge">
+                        <span id="imageCount">0</span> generated
+                    </div>
+                    <a href="/gallery" class="btn btn-secondary">Gallery</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Sidebar -->
+            <aside class="lg:col-span-1 space-y-6">
+                
+                <!-- Prompt -->
+                <div class="card">
+                    <label class="label">Prompt</label>
+                    <textarea id="promptInput" rows="4" placeholder="Describe your image...">anime girl with cyan hair, cat ears, fox tail, white jacket, black skirt</textarea>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <button onclick="randomPrompt()" class="btn btn-secondary">Random</button>
+                        <button onclick="useLastPrompt()" class="btn btn-secondary">Last</button>
+                    </div>
+                </div>
+                
+                <!-- Negative Prompt -->
+                <div class="card">
+                    <label class="label">Negative Prompt</label>
+                    <textarea id="negativePromptInput" rows="2" placeholder="Things to avoid...">lowres, bad anatomy, bad hands, worst quality, blurry, nsfw</textarea>
+                </div>
+                
+                <!-- Settings -->
+                <div class="card">
+                    <div class="section-title">Settings</div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="label">Style</label>
+                            <select id="styleSelect" onchange="setStyle(this.value)">
+                                <option value="anime">Anime</option>
+                                <option value="pixel">Pixel Art</option>
+                                <option value="realistic">Realistic</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="label">Quality</label>
+                            <select id="qualityPreset" onchange="applyQualityPreset(this.value)">
+                                <option value="fast">Fast (20 steps)</option>
+                                <option value="medium">Medium (28 steps)</option>
+                                <option value="balanced" selected>Balanced (35 steps)</option>
+                                <option value="quality">Quality (50 steps)</option>
+                                <option value="high">High (75 steps)</option>
+                                <option value="extreme">Extreme (100 steps)</option>
+                                <option value="ultra">Ultra (150 steps)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="label">Resolution</label>
+                            <select id="resSelect" onchange="checkResolutionWarning()">
+                                <option value="512x512">512×512 (Fast)</option>
+                                <option value="512x768" selected>512×768 (Portrait)</option>
+                                <option value="768x512">768×512 (Landscape)</option>
+                                <option value="768x768">768×768 (Square)</option>
+                                <option value="1024x768">1024×768 (HD)</option>
+                                <option value="768x1024">768×1024 (HD Portrait)</option>
+                                <option value="1024x1024">1024×1024 (HD Square)</option>
+                                <option value="720x1280">720×1280 (Mobile Wallpaper HD)</option>
+                                <option value="1080x1920">1080×1920 (Mobile Wallpaper Full HD)</option>
+                            </select>
+                            <div id="resWarning" class="warning-text hidden"></div>
+                        </div>
+                        
+                        <div>
+                            <label class="label">Seed</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="seedInput" placeholder="Random" class="flex-1">
+                                <button id="seedLockBtn" onclick="toggleSeedLock()" class="btn btn-secondary">🔓</button>
+                                <button onclick="randomSeed()" class="btn btn-secondary">🎲</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced -->
+                        <details>
+                            <summary class="label">Advanced Options</summary>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="label mb-0">Steps</label>
+                                        <span id="stepsValue" class="text-sm font-semibold">35</span>
+                                    </div>
+                                    <input id="stepsSlider" type="range" min="10" max="150" value="35"
+                                        oninput="document.getElementById('stepsValue').textContent = this.value">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="label mb-0">CFG Scale</label>
+                                        <span id="cfgValue" class="text-sm font-semibold">10.0</span>
+                                    </div>
+                                    <input id="cfgSlider" type="range" min="5" max="15" step="0.5" value="10"
+                                        oninput="document.getElementById('cfgValue').textContent = this.value">
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <button id="generateBtn" onclick="generateImage()" class="btn btn-primary w-full">
+                    Generate Image
+                </button>
+                
+            </aside>
+            
+            <!-- Main Content -->
+            <section class="lg:col-span-2 space-y-6">
+                
+                <!-- Preview -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="section-title mb-0">Preview</div>
+                        <div id="imageInfo" class="text-sm text-gray-500">Ready to generate</div>
+                    </div>
+                    
+                    <div id="previewArea" class="preview-area">
+                        <div id="placeholderText" class="text-center text-gray-400">
+                            <div class="text-5xl mb-3">🎨</div>
+                            <p class="font-medium">Configure settings and generate</p>
+                            <p class="text-sm mt-1">Your image will appear here</p>
+                        </div>
+                        <img id="previewImage" class="hidden" />
+                    </div>
+                    
+                    <!-- Progress -->
+                    <div id="progressContainer" class="hidden mt-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span id="progressText" class="font-medium">Generating...</span>
+                            <span id="progressPercent" class="font-semibold">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="progressBar" class="progress-fill" style="width:0%"></div>
+                        </div>
+                        <div id="etaText" class="text-xs text-gray-500 mt-2">Estimated time: calculating...</div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div id="imageActions" class="hidden mt-4 grid grid-cols-4 gap-2">
+                        <button onclick="downloadImage()" class="btn btn-secondary">Download</button>
+                        <button onclick="upscaleImage()" class="btn btn-secondary">Upscale</button>
+                        <button onclick="createVariation()" class="btn btn-secondary">Variation</button>
+                        <button onclick="img2img()" class="btn btn-secondary">Edit</button>
+                    </div>
+                </div>
+                
+                <!-- Recent Gallery -->
+                <div class="card">
+                    <div class="section-title">Recent Images</div>
+                    <div id="gallery" class="gallery-grid"></div>
+                </div>
+                
+                <!-- Output Gallery -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="section-title mb-0">All Outputs</div>
+                        <button onclick="refreshOutputGallery()" class="btn btn-secondary">Refresh</button>
+                    </div>
+                    <div id="outputGallery" class="gallery-grid max-h-80 overflow-y-auto">
+                        <div class="col-span-full text-center py-8 text-gray-400">Loading...</div>
+                    </div>
+                </div>
+                
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        const WS_URL = 'ws://localhost:8000/ws/generate';
+        
+        const DEFAULT_NEGATIVE_PROMPT = "lowres, bad anatomy, bad hands, worst quality, low quality, blurry, nsfw, nude";
+
+        let currentStyle = 'anime';
+        let generating = false;
+        let imageCounter = 0;
+        let lastPrompt = '';
+        let currentImageData = null;
+        let ws = null;
+        let seedLocked = false;
+
+        function loadSavedSettings() {
+            try {
+                const saved = localStorage.getItem('loom_settings');
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    if (settings.style) {
+                        currentStyle = settings.style;
+                        document.getElementById('styleSelect').value = settings.style;
+                    }
+                    if (settings.quality) {
+                        document.getElementById('qualityPreset').value = settings.quality;
+                        applyQualityPreset(settings.quality);
+                    }
+                    if (settings.resolution) {
+                        document.getElementById('resSelect').value = settings.resolution;
+                    }
+                    if (settings.steps) {
+                        document.getElementById('stepsSlider').value = settings.steps;
+                        document.getElementById('stepsValue').textContent = settings.steps;
+                    }
+                    if (settings.cfg) {
+                        document.getElementById('cfgSlider').value = settings.cfg;
+                        document.getElementById('cfgValue').textContent = settings.cfg;
+                    }
+                    if (settings.negativePrompt) {
+                        document.getElementById('negativePromptInput').value = settings.negativePrompt;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                const settings = {
+                    style: currentStyle,
+                    quality: document.getElementById('qualityPreset').value,
+                    resolution: document.getElementById('resSelect').value,
+                    steps: parseInt(document.getElementById('stepsSlider').value),
+                    cfg: parseFloat(document.getElementById('cfgSlider').value),
+                    negativePrompt: document.getElementById('negativePromptInput').value
+                };
+                localStorage.setItem('loom_settings', JSON.stringify(settings));
+            } catch (error) {
+                console.error('Failed to save settings:', error);
+            }
+        }
+
+        function showDetailedError(errorType, errorMessage) {
+            const errorMap = {
+                'connection': {
+                    title: 'Connection Failed',
+                    message: 'Cannot connect to the backend server.',
+                    solutions: [
+                        '• Make sure the server is running: python src/server.py',
+                        '• Check if port 8000 is available',
+                        '• Verify your firewall settings',
+                        '• Try restarting the server'
+                    ]
+                },
+                'cuda_oom': {
+                    title: 'Out of Memory (CUDA OOM)',
+                    message: 'Your GPU ran out of VRAM during generation.',
+                    solutions: [
+                        '• Use smaller resolution (512x512 recommended)',
+                        '• Reduce steps to 20-25',
+                        '• Select "Fast" quality preset',
+                        '• Restart server to clear memory',
+                        '• Generate at low res, then upscale 2x'
+                    ]
+                },
+                'timeout': {
+                    title: 'Generation Timeout',
+                    message: 'Generation took too long and was cancelled.',
+                    solutions: [
+                        '• Use faster quality presets',
+                        '• Reduce resolution',
+                        '• Check if GPU is overheating',
+                        '• Close other GPU-intensive applications'
+                    ]
+                },
+                'model_error': {
+                    title: 'Model Error',
+                    message: 'There was an error with the AI model.',
+                    solutions: [
+                        '• Restart the server',
+                        '• Check console for detailed error logs',
+                        '• Verify model files are downloaded correctly'
+                    ]
+                },
+                'websocket_closed': {
+                    title: 'Connection Lost',
+                    message: 'WebSocket connection was closed unexpectedly.',
+                    solutions: [
+                        '• Check your network connection',
+                        '• Server might have crashed - check terminal',
+                        '• Try refreshing the page',
+                        '• Restart the backend server'
+                    ]
+                },
+                'generic': {
+                    title: 'Error Occurred',
+                    message: errorMessage || 'An unknown error occurred.',
+                    solutions: [
+                        '• Check the browser console (F12) for details',
+                        '• Check the server terminal for errors',
+                        '• Try refreshing the page',
+                        '• Restart the server if issues persist'
+                    ]
+                }
+            };
+
+            const error = errorMap[errorType] || errorMap['generic'];
+            const solutionsText = error.solutions.join('\n');
+            alert(`${error.title}\n\n${error.message}\n\nSolutions:\n${solutionsText}`);
+        }
+
+        function setStyle(style) {
+            currentStyle = style;
+            saveSettings();
+        }
+
+        function toggleSeedLock() {
+            seedLocked = !seedLocked;
+            const seedInput = document.getElementById('seedInput');
+            const lockBtn = document.getElementById('seedLockBtn');
+            
+            if (seedLocked) {
+                seedInput.readOnly = true;
+                seedInput.style.background = '#f5f5f5';
+                lockBtn.textContent = '🔒';
+            } else {
+                seedInput.readOnly = false;
+                seedInput.style.background = '';
+                lockBtn.textContent = '🔓';
+            }
+        }
+
+        function randomSeed() {
+            if (!seedLocked) {
+                document.getElementById('seedInput').value = Math.floor(Math.random() * 100000);
+            }
+        }
+
+        function randomPrompt() {
+            const prompts = [
+                "anime girl with pastel pink hair, cat ears, magical staff, starry night",
+                "cyberpunk character with neon blue hair, tech armor, futuristic city",
+                "fantasy elf with silver hair, pointed ears, mystical forest",
+                "cute chibi character with oversized hoodie, animal tail, kawaii",
+                "warrior girl with red hair, sword, battle armor, dramatic pose",
+                "maid outfit, twin tails, holding tea tray, elegant mansion",
+                "school uniform, shy smile, cherry blossoms, spring day",
+                "gothic lolita, black dress, red ribbons, vampire aesthetic",
+                "steampunk engineer with goggles, mechanical wings, brass clockwork",
+                "magical girl transformation, rainbow sparkles, flowing ribbons",
+                "ninja assassin in moonlight, katana, dark rooftops",
+                "angel with white wings, golden halo, heavenly clouds",
+                "demon girl with horns, tail, mysterious smile, dark flames",
+                "futuristic pilot in astronaut suit, alien planet landscape",
+                "underwater mermaid with flowing hair, colorful fish, coral reef",
+                "samurai warrior in bamboo forest, traditional armor, falling leaves",
+                "witch with pointed hat, flying on broomstick, full moon night",
+                "princess in ballgown, tiara, grand castle ballroom",
+                "robot girl with LED eyes, metallic skin, sci-fi laboratory",
+                "vampire in gothic mansion, red eyes, elegant cape",
+                "dragon rider with scales armor, flying through storm clouds",
+                "fox spirit with multiple tails, shrine maiden outfit, torii gate",
+                "street artist with spray paint, graffiti wall, urban sunset",
+                "space explorer in astronaut suit, alien planet landscape",
+                "ice queen with crystal crown, frozen palace, snow magic",
+                "fire sorceress with flame hair, erupting volcano background",
+                "shrine maiden with red hakama, paper talismans, sacred ritual",
+                "battle mage casting spell, magical circles, glowing runes",
+                "cafe waitress with apron, serving coffee, cozy interior",
+                "detective with magnifying glass, foggy London streets, victorian era"
+            ];
+            document.getElementById('promptInput').value = prompts[Math.floor(Math.random() * prompts.length)];
+        }
+
+        function useLastPrompt() {
+            if (lastPrompt) {
+                document.getElementById('promptInput').value = lastPrompt;
+            } else {
+                alert('No previous prompt available');
+            }
+        }
+
+        function applyQualityPreset(preset) {
+            const presets = {
+                'fast': { steps: 20, cfg: 7 },
+                'medium': { steps: 28, cfg: 8.5 },
+                'balanced': { steps: 35, cfg: 10 },
+                'quality': { steps: 50, cfg: 12 },
+                'high': { steps: 75, cfg: 13 },
+                'extreme': { steps: 100, cfg: 14 },
+                'ultra': { steps: 150, cfg: 15 }
+            };
+            const p = presets[preset];
+            document.getElementById('stepsSlider').value = p.steps;
+            document.getElementById('stepsValue').textContent = p.steps;
+            document.getElementById('cfgSlider').value = p.cfg;
+            document.getElementById('cfgValue').textContent = p.cfg;
+            
+            saveSettings();
+            checkResolutionWarning();
+        }
+
+        function checkResolutionWarning() {
+            const res = document.getElementById('resSelect').value;
+            const warning = document.getElementById('resWarning');
+            const [width, height] = res.split('x').map(Number);
+            const megapixels = (width * height) / 1000000;
+            
+            if (megapixels > 0.75) {
+                warning.classList.remove('hidden');
+                warning.textContent = `Large resolution may take longer. Consider using Upscale 2x instead.`;
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        async function generateImage() {
+            if (generating) return;
+            
+            if (ws && ws.readyState !== WebSocket.CLOSED) {
+                ws.close();
+                ws = null;
+            }
+            
+            const res = document.getElementById('resSelect').value;
+            const [width, height] = res.split('x').map(Number);
+            const megapixels = (width * height) / 1000000;
+            
+            if (megapixels > 0.75) {
+                const confirmed = confirm(
+                    `WARNING: This resolution (${res}) may take significantly longer!\n\n` +
+                    `Recommended: Use a lower resolution with Upscale 2x after generation.\n\n` +
+                    'Continue anyway?'
+                );
+                if (!confirmed) return;
+            }
+            
+            saveSettings();
+            
+            generating = true;
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            document.getElementById('gpuStatusDot').classList.add('warning');
+            document.getElementById('gpuStatusText').textContent = 'Generating';
+            
+            document.getElementById('placeholderText').classList.add('hidden');
+            document.getElementById('progressContainer').classList.remove('hidden');
+            document.getElementById('previewArea').classList.add('generating');
+            
+            const prompt = document.getElementById('promptInput').value;
+            lastPrompt = prompt;
+            
+            let seed = null;
+            if (seedLocked) {
+                const seedInput = document.getElementById('seedInput').value;
+                seed = seedInput ? parseInt(seedInput) : Math.floor(Math.random() * 100000);
+            } else {
+                seed = document.getElementById('seedInput').value ? parseInt(document.getElementById('seedInput').value) : null;
+            }
+            
+            const settings = {
+                prompt: prompt,
+                negative_prompt: document.getElementById('negativePromptInput').value,
+                style: currentStyle,
+                seed: seed,
+                steps: parseInt(document.getElementById('stepsSlider').value),
+                cfg_scale: parseFloat(document.getElementById('cfgSlider').value),
+                width: width,
+                height: height
+            };
+            
+            try {
+                ws = new WebSocket(WS_URL);
+                
+                ws.onopen = () => {
+                    ws.send(JSON.stringify(settings));
+                };
+                
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'error') {
+                        const errorMessage = data.message || 'Unknown error occurred';
+                        
+                        // Detect error type and show detailed message
+                        if (errorMessage.includes('CUDA') || errorMessage.includes('out of memory') || errorMessage.includes('OOM')) {
+                            showDetailedError('cuda_oom', errorMessage);
+                        } else if (errorMessage.includes('timeout')) {
+                            showDetailedError('timeout', errorMessage);
+                        } else if (errorMessage.includes('model')) {
+                            showDetailedError('model_error', errorMessage);
+                        } else {
+                            showDetailedError('generic', errorMessage);
+                        }
+                        
+                        resetUI();
+                        if (ws) {
+                            ws.close();
+                            ws = null;
+                        }
+                        return;
+                    }
+                    
+                    if (data.type === 'progress') {
+                        document.getElementById('progressBar').style.width = data.progress + '%';
+                        document.getElementById('progressPercent').textContent = Math.floor(data.progress) + '%';
+                        document.getElementById('progressText').textContent = `Step ${data.step}/${data.total_steps}`;
+                        
+                        const eta = data.eta;
+                        const etaMin = Math.floor(eta / 60);
+                        const etaSec = Math.floor(eta % 60);
+                        document.getElementById('etaText').textContent = `Estimated time: ${etaMin}m ${etaSec}s`;
+                    } else if (data.type === 'completed') {
+                        finishGeneration(data);
+                        if (ws) {
+                            ws.close();
+                            ws = null;
+                        }
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    showDetailedError('connection', error.message);
+                    resetUI();
+                    if (ws) {
+                        ws.close();
+                        ws = null;
+                    }
+                };
+                
+                ws.onclose = (event) => {
+                    if (generating) {
+                        if (event.code !== 1000) {
+                            showDetailedError('websocket_closed', event.reason);
+                        }
+                        resetUI();
+                    }
+                    ws = null;
+                };
+                
+            } catch (error) {
+                showDetailedError('connection', error.message);
+                resetUI();
+                ws = null;
+            }
+        }
+
+        function resetUI() {
+            generating = false;
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('gpuStatusDot').classList.remove('warning');
+            document.getElementById('gpuStatusText').textContent = 'Ready';
+            document.getElementById('previewArea').classList.remove('generating');
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('imageActions').classList.add('hidden'); // Ensure actions are hidden on reset
+        }
+
+        function finishGeneration(data) {
+            currentImageData = data;
+            document.getElementById('progressContainer').classList.add('hidden');
+            document.getElementById('previewImage').classList.remove('hidden');
+            document.getElementById('previewImage').src = data.image;
+            document.getElementById('previewImage').dataset.filename = data.filename;
+            document.getElementById('previewImage').dataset.prompt = lastPrompt;
+            document.getElementById('previewImage').dataset.seed = data.seed;
+            document.getElementById('imageActions').classList.remove('hidden');
+            document.getElementById('previewArea').classList.remove('generating');
+            
+            imageCounter++;
+            document.getElementById('imageCount').textContent = imageCounter;
+            
+            const genTime = data.generation_time;
+            const min = Math.floor(genTime / 60);
+            const sec = Math.floor(genTime % 60);
+            const timeStr = min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+            
+            document.getElementById('imageInfo').textContent = `Seed: ${data.seed} | ${timeStr}`;
+            
+            if (data.seed && !seedLocked) {
+                document.getElementById('seedInput').value = data.seed;
+            }
+            
+            resetUI();
+            addToGallery(data.image, data.filename, lastPrompt, data.seed);
+            refreshOutputGallery();
+        }
+
+        function addToGallery(imageSrc, filename, prompt, seed) {
+            const gallery = document.getElementById('gallery');
+            
+            while (gallery.children.length >= 12) {
+                gallery.removeChild(gallery.lastChild);
+            }
+            
+            const container = document.createElement('div');
+            container.className = 'gallery-item';
+            container.onclick = () => showImage(imageSrc, filename, prompt, seed);
+            
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.alt = prompt;
+            
+            container.appendChild(img);
+            gallery.prepend(container);
+        }
+
+        function showImage(src, filename, prompt, seed) {
+            const img = document.getElementById('previewImage');
+            img.src = src;
+            img.dataset.filename = filename;
+            img.dataset.prompt = prompt;
+            img.dataset.seed = seed;
+            img.classList.remove('hidden');
+            
+            document.getElementById('placeholderText').classList.add('hidden');
+            document.getElementById('imageActions').classList.remove('hidden');
+            document.getElementById('imageInfo').textContent = `Seed: ${seed}`;
+            
+            currentImageData = { image: src, filename: filename, seed: seed };
+        }
+
+        function downloadImage() {
+            const img = document.getElementById('previewImage');
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = img.dataset.filename || 'generated_image.png';
+            link.click();
+        }
+
+        async function upscaleImage() {
+            if (!currentImageData) {
+                alert('Generate an image first!');
+                return;
+            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Upscaling...';
+            
+            try {
+                const response = await fetch(API_URL + '/upscale', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: currentImageData.filename,
+                        scale: 2
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('previewImage').src = data.image;
+                    document.getElementById('imageInfo').textContent = `Upscaled: ${data.width}x${data.height}`;
+                    currentImageData.filename = data.filename;
+                    addToGallery(data.image, data.filename, lastPrompt, currentImageData.seed);
+                    alert('Upscaled successfully!');
+                } else {
+                    showDetailedError('generic', data.error);
+                }
+            } catch (error) {
+                showDetailedError('connection', error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Upscale';
+            }
+        }
+
+        async function createVariation() {
+            if (!currentImageData) {
+                alert('Generate an image first!');
+                return;
+            }
+            
+            const strength = prompt('Enter variation strength (0.1-0.9):', '0.5');
+            if (!strength) return;
+            
+            alert('Creating variation... This will take 1-2 minutes!');
+            
+            try {
+                const response = await fetch(API_URL + '/variation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: currentImageData.filename,
+                        strength: parseFloat(strength),
+                        prompt: document.getElementById('promptInput').value,
+                        seed: currentImageData.seed
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('previewImage').src = data.image;
+                    currentImageData = { ...currentImageData, ...data };
+                    addToGallery(data.image, data.filename, lastPrompt, data.seed);
+                    alert('Variation created!');
+                } else {
+                    showDetailedError('generic', data.error);
+                }
+            } catch (error) {
+                showDetailedError('connection', error.message);
+            }
+        }
+
+        function img2img() {
+            alert('Image-to-Image editing coming soon!');
+        }
+
+        async function refreshOutputGallery() {
+            try {
+                const response = await fetch(API_URL + '/output-gallery');
+                const data = await response.json();
+                
+                const gallery = document.getElementById('outputGallery');
+                
+                if (data.images.length === 0) {
+                    gallery.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400">No images yet</div>';
+                    return;
+                }
+                
+                gallery.innerHTML = '';
+                
+                data.images.forEach(filename => {
+                    const container = document.createElement('div');
+                    container.className = 'gallery-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = API_URL + `/output-image/${filename}`;
+                    img.alt = filename;
+                    img.onclick = () => showOutputImage(filename);
+                    
+                    container.appendChild(img);
+                    gallery.appendChild(container);
+                });
+                
+            } catch (error) {
+                document.getElementById('outputGallery').innerHTML = 
+                    '<div class="col-span-full text-center py-8 text-red-400">Failed to load images</div>';
+            }
+        }
+
+        function showOutputImage(filename) {
+            const imgUrl = API_URL + `/output-image/${filename}`;
+            showImage(imgUrl, filename, '', '');
+            currentImageData = { filename: filename };
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && document.activeElement.tagName !== 'TEXTAREA') {
+                if (!generating) generateImage();
+            }
+            
+            if (e.key === 'Escape' && generating && ws) {
+                if (confirm('Cancel current generation?')) {
+                    ws.close();
+                    resetUI();
+                }
+            }
+            
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                saveSettings();
+                alert('Settings saved!');
+            }
+        });
+
+        ['qualityPreset', 'resSelect', 'stepsSlider', 'cfgSlider', 'styleSelect'].forEach(id => {
+            document.getElementById(id).addEventListener('change', saveSettings);
+        });
+
+        // Initialize
+        randomSeed();
+        loadSavedSettings();
+        refreshOutputGallery();
+    </script>
+</body>
+</html>
