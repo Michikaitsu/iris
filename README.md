@@ -107,7 +107,7 @@ python src/start.py all
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/loom.git
+git clone https://github.com/KaiTooast/loom.git
 
 # Navigate to directory
 cd loom
