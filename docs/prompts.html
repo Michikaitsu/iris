@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRIS – Prompt Engineering</title>
+
+  <link rel="stylesheet" href="/docs/assets/css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body class="font-['Outfit']">
+<canvas id="starfield"></canvas>
+
+<main class="max-w-5xl mx-auto px-6 py-24">
+
+  <div class="flex items-center justify-between mb-12">
+    <a href="index.html" class="text-xl font-semibold text-gradient hover:no-underline">← Back to Docs</a>
+    <a href="search.html" class="glass px-4 py-2 rounded-lg hover:no-underline flex items-center gap-2">
+      <i class="fas fa-search"></i> Search
+    </a>
+  </div>
+
+  <section class="glass p-10 rounded-2xl mb-16 text-center reveal">
+    <h1 class="text-5xl font-bold text-gradient mb-4">
+      <i class="fas fa-pen-fancy mr-3"></i>Prompt Engineering
+    </h1>
+    <p class="text-lg text-muted">
+      Master the art of writing effective prompts<br>
+      <span class="italic">Turn your ideas into stunning AI art</span>
+    </p>
+  </section>
+
+  <!-- Prompt Structure -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">📝 Prompt Structure</h2>
+
+    <div class="glass p-8 rounded-xl space-y-6">
+      <div class="bg-black/40 p-6 rounded-lg border-l-4 border-purple-500">
+        <div class="text-sm text-muted mb-2">Basic Template:</div>
+        <div class="font-mono text-sm">
+          [Subject] + [Style] + [Quality] + [Details]
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <h3 class="font-semibold mb-2">1. Subject (What)</h3>
+          <p class="text-muted">The main focus: "a warrior", "mountain landscape", "futuristic city"</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-2">2. Style (How it looks)</h3>
+          <p class="text-muted">Art style: "digital art", "oil painting", "photorealistic", "anime"</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-2">3. Quality Tags</h3>
+          <p class="text-muted">Modifiers: "masterpiece", "highly detailed", "8k", "professional"</p>
+        </div>
+
+        <div>
+          <h3 class="font-semibold mb-2">4. Technical Details</h3>
+          <p class="text-muted">Lighting, composition: "dramatic lighting", "bokeh", "wide angle"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Examples -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">✨ Effective Examples</h2>
+
+    <div class="space-y-6">
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4 mb-3">
+          <i class="fas fa-user text-2xl text-gradient mt-1"></i>
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Portrait Photography</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "close-up portrait of a woman, studio lighting, bokeh background, professional photography, highly detailed, 8k, photorealistic"
+            </div>
+            <p class="text-muted text-sm">Good for: Professional headshots, character portraits</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4 mb-3">
+          <i class="fas fa-robot text-2xl text-gradient mt-1"></i>
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Cyberpunk Scene</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "cyberpunk city street at night, neon lights, rain puddles reflecting lights, blade runner style, cinematic composition, highly detailed, digital art"
+            </div>
+            <p class="text-muted text-sm">Good for: Sci-fi environments, atmospheric scenes</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4 mb-3">
+          <i class="fas fa-mountain text-2xl text-gradient mt-1"></i>
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Fantasy Landscape</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "magical forest with glowing mushrooms, misty atmosphere, ethereal lighting, fantasy art, concept art, artstation trending, highly detailed"
+            </div>
+            <p class="text-muted text-sm">Good for: Fantasy worlds, concept art</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4 mb-3">
+          <i class="fas fa-dragon text-2xl text-gradient mt-1"></i>
+          <div>
+            <h3 class="text-lg font-semibold mb-2">Character Design</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "full body character design of a medieval knight, ornate armor, dramatic pose, white background, concept art, character sheet, highly detailed"
+            </div>
+            <p class="text-muted text-sm">Good for: Game characters, character concepts</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quality Tags -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">🏆 Quality Tags</h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-lg font-semibold mb-3">General Quality</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">masterpiece</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">best quality</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">highly detailed</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">professional</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">8k</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">4k</span>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-lg font-semibold mb-3">Photorealism</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">photorealistic</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">ultra realistic</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">hyperrealistic</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">lifelike</span>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-lg font-semibold mb-3">Art Styles</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">digital art</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">oil painting</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">concept art</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">anime</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">watercolor</span>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-lg font-semibold mb-3">Lighting</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">dramatic lighting</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">studio lighting</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">cinematic</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">volumetric</span>
+          <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">rim lighting</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Negative Prompts -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">🚫 Negative Prompts</h2>
+
+    <div class="glass p-8 rounded-xl space-y-4">
+      <p class="text-muted">Tell the AI what you DON'T want. Essential for quality results.</p>
+
+      <div class="bg-black/40 p-4 rounded-lg">
+        <div class="text-sm text-muted mb-2">Common Negative Prompt:</div>
+        <div class="text-sm italic">
+          "low quality, worst quality, blurry, distorted, ugly, deformed, disfigured, bad anatomy, wrong anatomy, extra limbs, missing limbs, floating limbs, watermark, text, error, cropped"
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4 mt-6">
+        <div>
+          <h3 class="font-semibold mb-2 text-sm">Quality Issues</h3>
+          <p class="text-xs text-muted">low quality, worst quality, blurry, pixelated</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2 text-sm">Anatomy Issues</h3>
+          <p class="text-xs text-muted">bad anatomy, extra fingers, missing limbs, deformed</p>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2 text-sm">Artifacts</h3>
+          <p class="text-xs text-muted">watermark, text, signature, error, cropped</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Common Mistakes -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">⚠️ Common Mistakes</h2>
+
+    <div class="space-y-4">
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4">
+          <i class="fas fa-times-circle text-2xl text-red-400"></i>
+          <div>
+            <h3 class="font-semibold mb-2">Too Vague</h3>
+            <div class="bg-red-500/10 p-3 rounded mb-2 text-sm">"a person"</div>
+            <div class="bg-green-500/10 p-3 rounded text-sm">"close-up portrait of a young woman with blue eyes, studio lighting, professional photography"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4">
+          <i class="fas fa-times-circle text-2xl text-red-400"></i>
+          <div>
+            <h3 class="font-semibold mb-2">Conflicting Styles</h3>
+            <div class="bg-red-500/10 p-3 rounded mb-2 text-sm">"realistic anime pixel art photograph"</div>
+            <div class="bg-green-500/10 p-3 rounded text-sm">"anime style portrait, highly detailed" OR "photorealistic portrait"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <div class="flex items-start gap-4">
+          <i class="fas fa-times-circle text-2xl text-red-400"></i>
+          <div>
+            <h3 class="font-semibold mb-2">Missing Negative Prompts</h3>
+            <p class="text-muted text-sm">Always include negative prompts to avoid common artifacts and quality issues.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pro Tips -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">💎 Pro Tips</h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass p-6 rounded-xl">
+        <h3 class="font-semibold mb-2">1. Emphasis with Parentheses</h3>
+        <p class="text-muted text-sm mb-2">Use (word:1.2) to increase emphasis</p>
+        <div class="bg-black/40 p-3 rounded text-xs">"(highly detailed:1.3) portrait"</div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="font-semibold mb-2">2. Artist References</h3>
+        <p class="text-muted text-sm mb-2">Reference specific artists for style</p>
+        <div class="bg-black/40 p-3 rounded text-xs">"in the style of Artgerm"</div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="font-semibold mb-2">3. Platform References</h3>
+        <p class="text-muted text-sm mb-2">Use art platforms for quality</p>
+        <div class="bg-black/40 p-3 rounded text-xs">"trending on artstation"</div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="font-semibold mb-2">4. Camera/Lens Terms</h3>
+        <p class="text-muted text-sm mb-2">Technical photography terms</p>
+        <div class="bg-black/40 p-3 rounded text-xs">"50mm lens, f/1.4, bokeh"</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center text-muted py-16">
+  <a href="index.html" class="text-gradient">← Back to Docs</a>
+</footer>
+
+<script src="assets/js/starfield.js"></script>
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('active'));
+  });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

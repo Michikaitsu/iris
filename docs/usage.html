@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRIS – Usage Guide</title>
+
+  <link rel="stylesheet" href="/docs/assets/css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body class="font-['Outfit']">
+<canvas id="starfield"></canvas>
+
+<main class="max-w-5xl mx-auto px-6 py-24">
+
+  <div class="flex items-center justify-between mb-12">
+    <a href="index.html" class="text-xl font-semibold text-gradient hover:no-underline">← Back to Docs</a>
+    <a href="search.html" class="glass px-4 py-2 rounded-lg hover:no-underline flex items-center gap-2">
+      <i class="fas fa-search"></i> Search
+    </a>
+  </div>
+
+  <section class="glass p-10 rounded-2xl mb-16 text-center reveal">
+    <h1 class="text-5xl font-bold text-gradient mb-4">
+      <i class="fas fa-book-open mr-3"></i>Usage Guide
+    </h1>
+    <p class="text-lg text-muted">
+      Master <strong>IRIS</strong> with this comprehensive guide<br>
+      <span class="italic">From basics to advanced techniques</span>
+    </p>
+  </section>
+
+  <!-- Basic Usage -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">🎨 Basic Usage</h2>
+    
+    <div class="space-y-6">
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-3">1. Launch the Web Interface</h3>
+        <pre class="bg-black/40 p-4 rounded-lg text-sm">python src/start.py web</pre>
+        <p class="text-muted mt-3">Open your browser to <code class="bg-black/40 px-2 py-1 rounded">http://localhost:8000</code></p>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-3">2. Write Your Prompt</h3>
+        <p class="text-muted mb-3">Describe what you want to see:</p>
+        <div class="bg-black/40 p-4 rounded-lg text-sm italic">
+          "a detailed portrait of a cyberpunk warrior, neon lighting, highly detailed, masterpiece, 8k"
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-3">3. Adjust Parameters</h3>
+        <ul class="text-muted space-y-2">
+          <li><strong>Steps:</strong> 20-30 for most images</li>
+          <li><strong>CFG Scale:</strong> 8-12 for balanced results</li>
+          <li><strong>Resolution:</strong> Start with 512×512</li>
+        </ul>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-3">4. Generate!</h3>
+        <p class="text-muted">Click "Generate" and wait for your masterpiece.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Advanced Features -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">⚡ Advanced Features</h2>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="glass p-6 rounded-xl">
+        <i class="fas fa-image text-3xl text-gradient mb-3"></i>
+        <h3 class="text-xl font-semibold mb-2">Img2Img</h3>
+        <p class="text-muted">Transform existing images using AI. Upload a base image and describe how you want it changed.</p>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <i class="fas fa-paint-brush text-3xl text-gradient mb-3"></i>
+        <h3 class="text-xl font-semibold mb-2">Inpainting</h3>
+        <p class="text-muted">Selectively edit parts of an image. Mask the area you want to change and provide a new description.</p>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <i class="fas fa-user text-3xl text-gradient mb-3"></i>
+        <h3 class="text-xl font-semibold mb-2">ControlNet</h3>
+        <p class="text-muted">Guide generation with pose, depth, or edge detection for precise control over composition.</p>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <i class="fas fa-palette text-3xl text-gradient mb-3"></i>
+        <h3 class="text-xl font-semibold mb-2">LoRA Models</h3>
+        <p class="text-muted">Apply custom styles and concepts using lightweight LoRA adapters.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Parameters -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">🎛️ Parameters Explained</h2>
+
+    <div class="space-y-4">
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-2">CFG Scale (Guidance)</h3>
+        <p class="text-muted mb-3">Controls how closely the AI follows your prompt.</p>
+        <ul class="text-muted space-y-1 list-disc list-inside">
+          <li><strong>Low (5-7):</strong> More creative, less accurate</li>
+          <li><strong>Medium (8-12):</strong> Balanced (recommended)</li>
+          <li><strong>High (15+):</strong> Very literal, may oversaturate</li>
+        </ul>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-2">Sampling Steps</h3>
+        <p class="text-muted mb-3">Number of refinement iterations.</p>
+        <ul class="text-muted space-y-1 list-disc list-inside">
+          <li><strong>20 steps:</strong> Fast, good quality</li>
+          <li><strong>30-50 steps:</strong> Better quality</li>
+          <li><strong>50+ steps:</strong> Diminishing returns</li>
+        </ul>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-2">Sampler</h3>
+        <p class="text-muted mb-3">Algorithm for generation process.</p>
+        <ul class="text-muted space-y-1 list-disc list-inside">
+          <li><strong>Euler a:</strong> Fast, creative variations</li>
+          <li><strong>DPM++ 2M Karras:</strong> High quality (recommended)</li>
+          <li><strong>DDIM:</strong> Deterministic, reproducible</li>
+        </ul>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-2">Resolution</h3>
+        <p class="text-muted mb-3">Image dimensions affect quality and VRAM usage.</p>
+        <ul class="text-muted space-y-1 list-disc list-inside">
+          <li><strong>512×512:</strong> Fast, low VRAM</li>
+          <li><strong>768×768:</strong> Balanced</li>
+          <li><strong>1024+:</strong> Requires high VRAM, may cause artifacts</li>
+        </ul>
+      </div>
+
+      <div class="glass p-6 rounded-xl">
+        <h3 class="text-xl font-semibold mb-2">Seed</h3>
+        <p class="text-muted mb-3">Random number that ensures reproducibility.</p>
+        <ul class="text-muted space-y-1 list-disc list-inside">
+          <li><strong>-1:</strong> Random seed each time</li>
+          <li><strong>Fixed number:</strong> Same result with same settings</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Best Practices -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">💡 Best Practices</h2>
+
+    <div class="glass p-8 rounded-xl space-y-4">
+      <div>
+        <h3 class="text-lg font-semibold mb-2">1. Start Small, Upscale Later</h3>
+        <p class="text-muted">Generate at 512×512, then use upscaling for final high-res output. Prevents artifacts and saves VRAM.</p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">2. Use Descriptive Language</h3>
+        <p class="text-muted">Be specific about style, lighting, mood, and details. "Portrait photo" is vague; "close-up portrait, studio lighting, bokeh background" is specific.</p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">3. Experiment with Parameters</h3>
+        <p class="text-muted">Try different samplers, steps, and CFG values. Save settings that work well for your style.</p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">4. Save Good Seeds</h3>
+        <p class="text-muted">When you get a great result, note the seed. You can iterate on successful generations by keeping the seed and tweaking the prompt.</p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold mb-2">5. Organize Your Outputs</h3>
+        <p class="text-muted">Rename and sort your favorite generations. Keep a library of prompts that work well.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow Example -->
+  <section class="mb-16 reveal">
+    <h2 class="text-3xl font-bold mb-6">🎯 Example Workflow</h2>
+
+    <div class="space-y-4">
+      <div class="glass p-6 rounded-xl flex items-start gap-4">
+        <div class="bg-purple-500/20 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-xl font-bold">1</span>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Quick Test (512×512, 20 steps)</h3>
+          <p class="text-muted">Iterate on your prompt until you get the composition you want.</p>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl flex items-start gap-4">
+        <div class="bg-purple-500/20 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-xl font-bold">2</span>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Refine (768×768, 30 steps)</h3>
+          <p class="text-muted">Once happy with composition, increase quality settings.</p>
+        </div>
+      </div>
+
+      <div class="glass p-6 rounded-xl flex items-start gap-4">
+        <div class="bg-purple-500/20 w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-xl font-bold">3</span>
+        </div>
+        <div>
+          <h3 class="font-semibold mb-1">Final Upscale</h3>
+          <p class="text-muted">Use upscaling tools for final high-resolution output.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="text-center text-muted py-16">
+  <a href="index.html" class="text-gradient">← Back to Docs</a>
+</footer>
+
+<script src="assets/js/starfield.js"></script>
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('active'));
+  });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

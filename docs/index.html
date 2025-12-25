@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRIS – Documentation</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body class="font-['Outfit']">
+
+<canvas id="starfield"></canvas>
+
+<header class="max-w-6xl mx-auto px-6 py-24 text-center">
+  <h1 class="text-5xl md:text-6xl font-bold text-gradient mb-6">
+    IRIS
+  </h1>
+  <p class="text-muted text-lg max-w-2xl mx-auto">
+    Interactive Reasoning Intelligence System – Architektur, Setup und Konzepte
+  </p>
+</header>
+
+<section class="max-w-6xl mx-auto px-6 grid gap-8 md:grid-cols-3 pb-24">
+  <a href="search.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">🔍 Search</h2>
+    <p class="text-muted">Find answers quickly</p>
+  </a>
+
+  <a href="setup.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Setup</h2>
+    <p class="text-muted">Installation, Konfiguration und erste Schritte</p>
+  </a>
+
+  <a href="faq.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">FAQ</h2>
+    <p class="text-muted">Frequently asked questions</p>
+  </a>
+
+  <a href="usage.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Usage Guide</h2>
+    <p class="text-muted">Detailed usage instructions</p>
+  </a>
+
+  <a href="artifacts.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Artifacts</h2>
+    <p class="text-muted">Architektur, Module und Datenflüsse</p>
+  </a>
+
+  <a href="prompts.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Prompt Engineering</h2>
+    <p class="text-muted">Write better prompts</p>
+  </a>
+
+  <a href="troubleshooting.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Troubleshooting</h2>
+    <p class="text-muted">Fix common problems</p>
+  </a>
+
+  <a href="api.html" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">API Reference</h2>
+    <p class="text-muted">Integration and development</p>
+  </a>
+
+  <a href="assets/screenshots/" class="glass p-6 rounded-xl reveal hover:no-underline">
+    <h2 class="text-xl font-semibold mb-2">Screenshots</h2>
+    <p class="text-muted">UI, Prozesse und Beispiele</p>
+  </a>
+</section>
+
+<footer class="text-center text-muted py-16">
+  <span class="text-sm">© 2025 IRIS – built by Kai</span>
+</footer>
+
+<!-- Starfield Script -->
+<script src="/docs/assets/js/starfield.js"></script>
+
+<!-- Reveal Animation Script -->
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add("active"));
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IRIS – Artifact Gallery</title>
+
+  <!-- Portfolio CSS -->
+  <link rel="stylesheet" href="/docs/assets/css/styles.css" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<canvas id="starfield"></canvas>
+
+<main class="max-w-5xl mx-auto px-6 py-24 space-y-24">
+
+  <!-- Navigation Header -->
+  <div class="flex items-center justify-between mb-12">
+    <a href="index.html" class="text-xl font-semibold text-gradient hover:no-underline">← Back to Docs</a>
+    <a href="search.html" class="glass px-4 py-2 rounded-lg hover:no-underline flex items-center gap-2">
+      <i class="fas fa-search"></i> Search
+    </a>
+  </div>
+
+  <!-- Header -->
+  <section class="text-center space-y-4 reveal">
+    <h1 class="text-5xl font-bold text-gradient">🎭 Artifact Gallery</h1>
+    <p class="text-lg text-muted">
+      When AI gets a little <em>too</em> creative.<br>
+      <span class="opacity-70">Common artifacts & how to deal with them</span>
+    </p>
+  </section>
+
+  <!-- What are artifacts -->
+  <section class="glass p-8 reveal space-y-4">
+    <h2 class="text-2xl font-semibold">❓ What Are Artifacts?</h2>
+    <p class="text-muted">
+      Artifacts are visual errors caused by conflicting data, resolution limits
+      or prompt ambiguity. Some are annoying — others are accidentally hilarious.
+    </p>
+  </section>
+
+  <!-- Artifact Cards -->
+  <section class="space-y-12">
+
+    <!-- Clone Saga -->
+    <div class="glass p-8 reveal space-y-3">
+      <h3 class="text-xl font-semibold">👥 The Clone Saga</h3>
+      <p><strong>Symptom:</strong> Two (or more) heads, merged faces</p>
+      <p><strong>Cause:</strong> High resolution (1024px+)</p>
+      <p><strong>Fix:</strong> Use <code>512×768</code> and upscale</p>
+      <p class="text-muted">Example: <em>artifact_two_heads.png</em></p>
+    </div>
+
+    <!-- Hand Horror -->
+    <div class="glass p-8 reveal space-y-3">
+      <h3 class="text-xl font-semibold">🖐️ Hand Horror</h3>
+      <p><strong>Symptom:</strong> 6+ fingers, backwards thumbs, hand‑feet</p>
+      <p><strong>Cause:</strong> Confusing hand pose training data</p>
+      <p><strong>Fix:</strong> Add <code>normal hands, five fingers</code> to prompt</p>
+      <p class="text-muted"><strong>Pro Tip:</strong> ControlNet OpenPose (coming soon)</p>
+    </div>
+
+    <!-- Almost Words -->
+    <div class="glass p-8 reveal space-y-3">
+      <h3 class="text-xl font-semibold">📝 Almost‑Words</h3>
+      <p><strong>Symptom:</strong> Text like “ČÅFĒ” instead of “CAFE”</p>
+      <p><strong>Cause:</strong> Stable Diffusion is bad at text</p>
+      <p><strong>Fix:</strong> Add text in post‑processing or use SDXL</p>
+    </div>
+
+    <!-- Anatomy -->
+    <div class="glass p-8 reveal space-y-3">
+      <h3 class="text-xl font-semibold">🦵 Anatomical Mysteries</h3>
+      <p><strong>Symptom:</strong> Extra limbs, twisted joints</p>
+      <p><strong>Cause:</strong> Merged training samples</p>
+      <p><strong>Fix:</strong> CFG scale 12–15 + better negative prompts</p>
+    </div>
+
+    <!-- Cursed -->
+    <div class="glass p-8 reveal space-y-3">
+      <h3 class="text-xl font-semibold">🌈 The “Cursed” Generation</h3>
+      <p><strong>Symptom:</strong> Abstract chaos</p>
+      <p><strong>Cause:</strong> Conflicting styles</p>
+      <p><strong>Example:</strong> <code>realistic anime pixel art photograph</code></p>
+      <p><strong>Fix:</strong> Pick ONE style</p>
+    </div>
+
+  </section>
+
+  <!-- Prevention -->
+  <section class="glass p-8 reveal space-y-4">
+    <h2 class="text-2xl font-semibold">🛡️ Prevention Tips</h2>
+    <ol class="list-decimal list-inside space-y-1 text-muted">
+      <li>Start small: 512×512 → upscale</li>
+      <li>Strong negatives</li>
+      <li>Simple prompts beat complex ones</li>
+      <li>Test different seeds</li>
+      <li>CFG sweet spot: 8–12 (not 20)</li>
+    </ol>
+  </section>
+
+  <!-- When artifacts are good -->
+  <section class="glass p-8 reveal space-y-4">
+    <h2 class="text-2xl font-semibold">🎨 When Artifacts Are Good</h2>
+    <ul class="list-disc list-inside text-muted space-y-1">
+      <li>Abstract art</li>
+      <li>Surreal experiments</li>
+      <li>Meme material 😂</li>
+    </ul>
+
+    <p class="pt-4">
+      Share your best artifacts on
+      <a href="#" class="text-gradient">Discord</a>
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-muted pt-12">
+    <a href="index.html" class="text-gradient">← Back to Docs</a>
+  </footer>
+
+</main>
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('active'));
+  });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
