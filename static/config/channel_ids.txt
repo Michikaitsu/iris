@@ -1,3 +1,0 @@
-new=[Channel ID for New Images]
-variations=[Channel ID for Variated Images]
-upscaled=[Channel ID for Upscaled Images]

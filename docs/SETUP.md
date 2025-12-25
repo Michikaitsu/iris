@@ -1,65 +1,92 @@
-# 🛠️ Setup Guide
+<div align="center">
 
-Complete installation guide for AI Image Generator Pro.
+# 📖 Setup Guide
+### Complete Installation Guide for I.R.I.S.
 
----
+*Intelligent Rendering & Image Synthesis*
 
-## Table of Contents
-1. [System Requirements](#system-requirements)
-2. [Prerequisites](#prerequisites)
-3. [Installation](#installation)
-4. [Configuration](#configuration)
-5. [First Run](#first-run)
-6. [Troubleshooting](#troubleshooting)
+</div>
 
 ---
 
-## System Requirements
+## 📋 Table of Contents
+
+- [System Requirements](#-system-requirements)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+- [Configuration](#️-configuration)
+- [First Run](#-first-run)
+- [Troubleshooting](#-troubleshooting)
+
+---
+
+## 💻 System Requirements
 
 ### Hardware
 
-#### Minimum (GTX 1650 / 4GB VRAM)
-- **GPU**: NVIDIA GTX 1650 or better
-- **RAM**: 8GB system RAM
-- **Storage**: 20GB free space
-- **Performance**: ~6 minutes per 512x768 image
-
-#### Recommended (RTX 3060 / 12GB VRAM)
-- **GPU**: NVIDIA RTX 3060 or better
-- **RAM**: 16GB system RAM
-- **Storage**: 50GB free space
-- **Performance**: ~2 minutes per 512x768 image
-
-#### High-End (RTX 4090 / 24GB VRAM)
-- **GPU**: NVIDIA RTX 4090
-- **RAM**: 32GB system RAM
-- **Storage**: 100GB free space
-- **Performance**: ~30 seconds per 512x768 image
-
-#### CPU-Only (Not Recommended)
-- **CPU**: 8+ cores recommended
-- **RAM**: 16GB+ system RAM
-- **Storage**: 20GB free space
-- **Performance**: 30-60 minutes per image
+<table>
+<tr>
+<th>Tier</th>
+<th>GPU</th>
+<th>VRAM</th>
+<th>RAM</th>
+<th>Storage</th>
+<th>Performance</th>
+</tr>
+<tr>
+<td><strong>Minimum</strong></td>
+<td>GTX 1650</td>
+<td>4GB</td>
+<td>8GB</td>
+<td>20GB</td>
+<td>~6 min / 512x768</td>
+</tr>
+<tr>
+<td><strong>Recommended</strong></td>
+<td>RTX 3060</td>
+<td>12GB</td>
+<td>16GB</td>
+<td>50GB</td>
+<td>~2 min / 512x768</td>
+</tr>
+<tr>
+<td><strong>High-End</strong></td>
+<td>RTX 4090</td>
+<td>24GB</td>
+<td>32GB</td>
+<td>100GB</td>
+<td>~30 sec / 512x768</td>
+</tr>
+<tr>
+<td><strong>CPU-Only</strong></td>
+<td>8+ cores</td>
+<td>N/A</td>
+<td>16GB+</td>
+<td>20GB</td>
+<td>30-60 min / image</td>
+</tr>
+</table>
 
 ### Software
 
-#### Required
-- **Python**: 3.9, 3.10, or 3.11 (3.12 not yet fully supported)
-- **CUDA**: 11.8 or 12.1 (if using NVIDIA GPU)
-- **Git**: For cloning repository
+**Required:**
+- Python 3.9, 3.10, or 3.11 (3.12 not yet fully supported)
+- CUDA 11.8 or 12.1 (if using NVIDIA GPU)
+- Git
 
-#### Optional
-- **Discord Account**: For bot integration
-- **nvidia-smi**: For GPU monitoring (included with CUDA)
+**Optional:**
+- Discord Account (for bot integration)
+- nvidia-smi (included with CUDA)
 
 ---
 
-## Prerequisites
+## 📦 Prerequisites
 
 ### 1. Install Python
 
-#### Windows
+<details>
+<summary><strong>Windows</strong></summary>
+
 ```bash
 # Download from python.org
 # Or use winget:
@@ -69,99 +96,103 @@ winget install Python.Python.3.11
 python --version
 ```
 
-#### Linux (Ubuntu/Debian)
+</details>
+
+<details>
+<summary><strong>Linux (Ubuntu/Debian)</strong></summary>
+
 ```bash
 sudo apt update
 sudo apt install python3.11 python3.11-venv python3-pip
 python3.11 --version
 ```
 
-#### macOS
+</details>
+
+<details>
+<summary><strong>macOS</strong></summary>
+
 ```bash
 # Using Homebrew
 brew install python@3.11
 python3.11 --version
 ```
 
+</details>
+
 ### 2. Install CUDA (NVIDIA GPU Only)
 
-#### Windows
+<details>
+<summary><strong>Windows</strong></summary>
+
 1. Download from [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-downloads)
 2. Install CUDA 11.8 or 12.1
 3. Verify: `nvcc --version`
 
-#### Linux
+</details>
+
+<details>
+<summary><strong>Linux</strong></summary>
+
 ```bash
 # Ubuntu 22.04 example
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
 sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda-repo-ubuntu2204-12-1-local_12.1.0-530.30.02-1_amd64.deb
-sudo dpkg -i cuda-repo-ubuntu2204-12-1-local_12.1.0-530.30.02-1_amd64.deb
-sudo cp /var/cuda-repo-ubuntu2204-12-1-local/cuda-*-keyring.gpg /usr/share/keyrings/
-sudo apt-get update
-sudo apt-get -y install cuda
+# ... (follow NVIDIA's installation instructions)
 
 # Verify
 nvcc --version
 nvidia-smi
 ```
 
+</details>
+
 ### 3. Install Git
 
-#### Windows
 ```bash
+# Windows
 winget install Git.Git
-```
 
-#### Linux
-```bash
+# Linux
 sudo apt install git
-```
 
-#### macOS
-```bash
+# macOS
 brew install git
 ```
 
 ---
 
-## Installation
+## 🚀 Installation
 
-### Method 1: Automated Installer (Recommended)
+### Method 1: Quick Install (Recommended)
 
-#### Windows
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/ai-image-generator.git
-cd ai-image-generator
+git clone https://github.com/yourusername/iris-image-synthesis.git
+cd iris-image-synthesis
 
-# 2. Run installer
-scripts\install.bat
+# 2. Create virtual environment
+python -m venv venv
 
-# 3. Follow prompts
-```
+# 3. Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
 
-#### Linux/macOS
-```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/ai-image-generator.git
-cd ai-image-generator
-
-# 2. Make installer executable
-chmod +x scripts/install.sh
-
-# 3. Run installer
-./scripts/install.sh
-
-# 4. Follow prompts
+# 4. Install dependencies
+pip install -r requirements.txt
 ```
 
 ### Method 2: Manual Installation
 
+<details>
+<summary><strong>Step-by-Step Manual Setup</strong></summary>
+
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/ai-image-generator.git
-cd ai-image-generator
+git clone https://github.com/yourusername/iris-image-synthesis.git
+cd iris-image-synthesis
 
 # 2. Create virtual environment
 python -m venv venv
@@ -175,7 +206,7 @@ source venv/bin/activate
 # 4. Upgrade pip
 pip install --upgrade pip
 
-# 5. Install PyTorch (CUDA)
+# 5. Install PyTorch
 # For CUDA 11.8:
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
@@ -192,148 +223,286 @@ pip install -r requirements.txt
 python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA Available: {torch.cuda.is_available()}')"
 ```
 
+</details>
+
 ---
 
-## Configuration
+## ⚙️ Configuration
 
 ### 1. Basic Configuration
 
-No configuration needed for basic usage! The web interface works out of the box.
+> ✅ **No configuration needed for basic web UI!**
 
-### 2. Discord Bot Setup (Optional)
+Just run:
 
-#### Step 1: Create Discord Bot
+```bash
+python src/start.py web
+```
+
+### 2. Environment Variables (Recommended)
+
+Create a `.env` file in the project root:
+
+```env
+# ============================================
+# Server Settings
+# ============================================
+HOST=0.0.0.0
+PORT=8000
+
+# ============================================
+# Discord Bot Configuration (Optional)
+# ============================================
+DISCORD_BOT_TOKEN=your_bot_token_here
+DISCORD_BOT_ID=your_bot_id_here
+DISCORD_BOT_OWNER_ID=your_discord_user_id_here
+
+# Discord Channel IDs
+DISCORD_CHANNEL_NEW_IMAGES=1234567890123456789
+DISCORD_CHANNEL_VARIATIONS=9876543210987654321
+DISCORD_CHANNEL_UPSCALED=1234567890123456789
+
+# ============================================
+# Model Settings
+# ============================================
+DEFAULT_MODEL=anime
+
+# ============================================
+# DRAM Extension (for low VRAM GPUs)
+# ============================================
+DRAM_EXTENSION_ENABLED=false
+VRAM_THRESHOLD_GB=6
+MAX_DRAM_GB=16
+```
+
+### 3. Discord Bot Setup (Optional)
+
+<details>
+<summary><strong>Step 1: Create Discord Bot</strong></summary>
+
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
 2. Click "New Application"
-3. Name your bot (e.g., "AI Art Bot")
+3. Name your bot (e.g., "I.R.I.S. Bot")
 4. Go to "Bot" tab → "Add Bot"
 5. Copy the **Bot Token**
 
-#### Step 2: Get Channel IDs
+</details>
+
+<details>
+<summary><strong>Step 2: Get Channel IDs</strong></summary>
+
 1. Enable Developer Mode in Discord:
    - User Settings → Advanced → Developer Mode (ON)
 2. Right-click your channel → Copy ID
-3. You need TWO channel IDs:
-   - One for new images
-   - One for variations
+3. You need **THREE** channel IDs:
+   - One for new images (`DISCORD_CHANNEL_NEW_IMAGES`)
+   - One for variations (`DISCORD_CHANNEL_VARIATIONS`)
+   - One for upscaled images (`DISCORD_CHANNEL_UPSCALED`)
 
-#### Step 3: Get Your User ID
-1. Right-click your username → Copy ID
+</details>
 
-#### Step 4: Configure Files
-```bash
-# Copy example files
-cp static/bot_token.txt.example static/bot_token.txt
-cp static/bot_owner_id.txt.example static/bot_owner_id.txt
-cp static/bot_id.txt.example static/bot_id.txt
+<details>
+<summary><strong>Step 3: Get Your User ID and Bot ID</strong></summary>
 
-# Edit files
-# Windows:
-notepad static\bot_token.txt
-# Linux/macOS:
-nano static/bot_token.txt
+1. Right-click your username → Copy ID (for `DISCORD_BOT_OWNER_ID`)
+2. Right-click the bot username → Copy ID (for `DISCORD_BOT_ID`)
+
+</details>
+
+<details>
+<summary><strong>Step 4: Configure .env File</strong></summary>
+
+Add all Discord settings to your `.env` file:
+
+```env
+# Discord Bot Configuration
+DISCORD_BOT_TOKEN=MTM3OTU1MjI2MjA2OTgxMzI0OA.GjAJ2-.example_token
+DISCORD_BOT_ID=1379552262069813248
+DISCORD_BOT_OWNER_ID=918149823587307580
+
+# Discord Channel IDs
+DISCORD_CHANNEL_NEW_IMAGES=1442114035368591462
+DISCORD_CHANNEL_VARIATIONS=1442114068445003839
+DISCORD_CHANNEL_UPSCALED=1442114100095090822
 ```
 
-Add your credentials:
-```
-# bot_token.txt
-your_bot_token_here
-
-# bot_owner_id.txt
-your_discord_user_id
-
-# bot_id.txt
-bot_discord_user_id
-```
-
-#### Step 5: Update Channel IDs
-Edit `src/discord_bot.py`:
-```python
-# Line 20-21
-CHANNEL_NEW_IMAGES = 1234567890123456789  # Your channel ID
-CHANNEL_VARIATIONS = 9876543210987654321  # Your channel ID
-```
-
-#### Step 6: Invite Bot to Server
-1. Go to Discord Developer Portal → Your App → OAuth2 → URL Generator
-2. Select scopes: `bot`
-3. Select permissions: 
-   - Send Messages
-   - Attach Files
-   - Read Message History
-4. Copy generated URL and open in browser
-5. Select your server and authorize
+</details>
 
 ---
 
-## First Run
+## 🎬 First Run
 
 ### 1. Start Server
+
 ```bash
 # Make sure virtual environment is activated
 source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate     # Windows
 
-# Start server
-python src/server.py
+# Start web UI only
+python src/start.py web
+
+# Or start bot only
+python src/start.py bot
+
+# Or start both
+python src/start.py all
 ```
 
 ### 2. Model Download (First Time Only)
+
 On first run, the AI model will be downloaded (~5GB):
+
 ```
 ================================================================
-🚀 Starting AI Image Generator Backend...
+Starting AI Image Generator Backend...
 ================================================================
 ✅ NVIDIA GPU detected: NVIDIA GeForce RTX 3060
 
-📦 Loading Anime model...
-⏳ This will take 5-10 minutes on first run (downloading model)...
-Downloading (…)ain/model_index.json: 100%|██████████| 5.2G/5.2G [05:23<00:00, 16.0MB/s]
+Loading Model: Ojimi/anime-kawai-diffusion
+This may take 5-10 minutes on first run...
+Downloading model components... 100%
 ✅ Model loaded successfully!
 ```
 
-**Be patient!** This only happens once.
+> ⏰ **Be patient!** This only happens once.
 
 ### 3. Open Web Interface
+
 ```
-🌐 Server ready at http://localhost:8000
-📱 Open your browser and navigate to the URL above
+================================================================
+Server ready at http://localhost:8000
+================================================================
 ```
 
-Open browser: `http://localhost:8000`
+> 🌐 Open browser: **http://localhost:8000**
 
 ### 4. Generate First Image
-1. Enter a prompt: "anime girl with blue hair"
-2. Click "🚀 Generate Image"
+
+1. Enter a prompt: `"anime girl with blue hair"`
+2. Click **"Generate Image"**
 3. Watch the progress bar
 4. See your generated image!
 
 ---
 
-## GPU-Specific Setup
+## 📁 File Structure
 
-### GTX Series (No Tensor Cores)
-Edit `src/server.py`, line ~150:
-```python
-# Use float32 for stability
-dtype = torch.float32
 ```
-
-### RTX Series (Tensor Cores)
-```python
-# Use float16 for speed
-dtype = torch.float16
+iris-image-synthesis/
+├── 📂 src/
+│   ├── 📂 api/
+│   │   └── server.py              # FastAPI server
+│   ├── 📂 core/
+│   │   ├── config.py              # Configuration
+│   │   ├── model_loader.py        # Model loading
+│   │   └── generator.py           # Generation logic
+│   ├── 📂 services/
+│   │   ├── bot.py                 # Discord bot
+│   │   └── upscaler.py            # Upscaling
+│   ├── 📂 utils/
+│   │   ├── logger.py              # Logging
+│   │   └── file_manager.py        # File operations
+│   ├── 📂 frontend/
+│   │   ├── index.html             # Landing page
+│   │   ├── generate.html          # Generation UI
+│   │   ├── gallery.html           # Image gallery
+│   │   └── settings.html          # Settings
+│   └── start.py                   # Entry point
+├── 📂 static/
+│   ├── 📂 data/
+│   │   ├── prompts_history.json   # ✅ Prompt logging
+│   │   └── img_send.json          # ✅ Image tracking
+│   ├── 📂 assets/
+│   ├── 📂 css/
+│   └── 📂 js/
+├── 📂 outputs/                    # Generated images
+├── 📂 docs/
+│   ├── SETUP.md                   # This file
+│   └── ARTIFACTS.md
+├── .env                           # ✅ Environment variables
+└── requirements.txt
 ```
-
-Auto-detection is enabled by default!
 
 ---
 
-## Troubleshooting
+## 🛠️ Troubleshooting
+
+### Common Errors
+
+<details>
+<summary><strong>1. "ModuleNotFoundError: No module named 'discord.ext'"</strong></summary>
+
+**Cause**: File naming conflict.
+
+**Solution**: Already fixed! The bot is now named `bot.py`.
+
+```bash
+python src/start.py bot
+```
+
+</details>
+
+<details>
+<summary><strong>2. "RuntimeError: File at path static/settings.html does not exist"</strong></summary>
+
+**Cause**: HTML files are in `src/frontend/`, not `static/`.
+
+**Solution**: Already fixed in `server.py`.
+
+</details>
+
+<details>
+<summary><strong>3. Discord Bot Not Sending Images</strong></summary>
+
+**Solution**: Ensure your `.env` file has the correct variable names:
+
+```env
+DISCORD_BOT_TOKEN=your_token_here
+DISCORD_BOT_ID=your_bot_id
+DISCORD_BOT_OWNER_ID=your_user_id
+DISCORD_CHANNEL_NEW_IMAGES=channel_id_here
+DISCORD_CHANNEL_VARIATIONS=channel_id_here
+DISCORD_CHANNEL_UPSCALED=channel_id_here
+```
+
+Check:
+- ✅ Bot has "Send Messages" and "Attach Files" permissions
+- ✅ All channel IDs are valid
+- ✅ Bot is invited to your server
+
+</details>
+
+<details>
+<summary><strong>4. Images Sending Twice to Discord</strong></summary>
+
+**Solution**: Fixed with 6-second buffer delay. Update to latest version.
+
+</details>
+
+<details>
+<summary><strong>5. Favicon Not Loading</strong></summary>
+
+**Solution**: Already fixed. Favicon path corrected to `static/assets/favico.png`.
+
+</details>
+
+<details>
+<summary><strong>6. "Out of Memory" Error</strong></summary>
+
+**Solutions:**
+1. Enable DRAM Extension in Settings
+2. Use smaller resolution (512x512)
+3. Reduce steps (20-30 instead of 50)
+4. Close other GPU applications
+
+</details>
 
 ### Installation Issues
 
-#### "Python not found"
+<details>
+<summary><strong>"Python not found"</strong></summary>
+
 ```bash
 # Windows: Add Python to PATH during installation
 # Or reinstall with "Add to PATH" checked
@@ -345,7 +514,11 @@ sudo apt install python3.11
 python --version
 ```
 
-#### "CUDA not found" / "torch.cuda.is_available() = False"
+</details>
+
+<details>
+<summary><strong>"CUDA not found"</strong></summary>
+
 ```bash
 # 1. Check NVIDIA driver
 nvidia-smi
@@ -358,127 +531,40 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-#### "Out of Memory" Error
-```python
-# Reduce resolution or steps
-width = 512  # Instead of 1024
-steps = 20   # Instead of 50
-
-# Or enable model CPU offloading in server.py:
-pipe.enable_model_cpu_offload()
-```
-
-### Runtime Issues
-
-#### "Model download stuck"
-```bash
-# Check internet connection
-# Or download manually from HuggingFace
-
-# Clear cache and retry
-rm -rf ~/.cache/huggingface/
-python src/server.py
-```
-
-#### "WebSocket connection failed"
-```bash
-# Check if port 8000 is in use
-# Windows:
-netstat -ano | findstr :8000
-# Linux:
-lsof -i :8000
-
-# Change port in server.py if needed
-uvicorn.run(app, host="0.0.0.0", port=8001)
-```
-
-#### Discord Bot Not Starting
-```bash
-# Check bot_token.txt exists and contains valid token
-cat static/bot_token.txt
-
-# Check bot permissions in Discord server
-# Ensure bot has "Send Messages" and "Attach Files"
-
-# Check console for error messages
-```
-
-### Performance Issues
-
-#### "Generation too slow"
-```bash
-# 1. Check GPU is being used
-python -c "import torch; print(torch.cuda.is_available())"
-
-# 2. Lower settings
-Steps: 20-30 (instead of 50)
-Resolution: 512x512 (instead of 1024x1024)
-
-# 3. Close other GPU applications
-# - Chrome/Firefox with hardware acceleration
-# - Other AI tools
-# - Games
-```
-
-#### "GPU temperature too high (>85°C)"
-```bash
-# 1. Check GPU fans
-nvidia-smi
-
-# 2. Clean GPU heatsink
-# 3. Improve case airflow
-# 4. Lower power limit (if needed)
-nvidia-smi -pl 150  # 150W limit example
-```
+</details>
 
 ---
 
-## Advanced Configuration
+## 🎯 Next Steps
 
-### Custom Model Path
-```python
-# src/server.py, line ~140
-model_id = "Ojimi/anime-kawai-diffusion"  # Default
+<div align="center">
 
-# Change to local path or different model:
-model_id = "/path/to/your/model"
-model_id = "stabilityai/stable-diffusion-2-1"
-```
+| Status | Next Step |
+|--------|-----------|
+| ✅ Installation complete | → Start generating images! |
+| ✅ Want Discord integration | → Complete Discord Bot Setup |
+| ✅ Having issues | → Check Troubleshooting |
+| ✅ Want to contribute | → Read [CONTRIBUTING.md](../CONTRIBUTING.md) |
 
-### Environment Variables
-Create `.env` file:
-```bash
-CUDA_VISIBLE_DEVICES=0    # Use first GPU only
-MODEL_CACHE_DIR=/custom/path
-API_HOST=0.0.0.0
-API_PORT=8000
-```
-
-### Multi-GPU Setup
-```python
-# src/server.py
-device = "cuda:0"  # First GPU
-device = "cuda:1"  # Second GPU
-```
+</div>
 
 ---
 
-## Next Steps
+## 💬 Support
 
-- ✅ Installation complete? → Read [CONFIGURATION.md](CONFIGURATION.md)
-- ✅ Want to use the API? → Read [API.md](API.md)
-- ✅ Having issues? → Read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- ✅ Want to contribute? → Read [CONTRIBUTING.md](../CONTRIBUTING.md)
+Still stuck? Open an issue on GitHub with:
 
----
-
-## Support
-
-Still stuck? Open an issue on GitHub:
-https://github.com/yourusername/ai-image-generator/issues
-
-Include:
 - Your OS and Python version
 - GPU model and VRAM
 - Full error message
 - Steps to reproduce
+
+---
+
+<div align="center">
+
+**Made with ❤️ using Stable Diffusion**
+
+[⬆ Back to Top](#-setup-guide)
+
+</div>

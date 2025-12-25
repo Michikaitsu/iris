@@ -1,20 +1,28 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery - L.O.O.M.</title>
-    <link rel="icon" type="image/png" href="static/assets/favico.png" />
+    <!-- Updated title to I.R.I.S. -->
+    <title>Gallery - I.R.I.S.</title>
+    <!-- Fixed favicon path -->
+    <link rel="icon" type="image/png" href="/static/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Matching dark mode theme with main page */
         * { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        
+        /* Updated color scheme from purple to cyan/teal */
+        :root {
+            --primary: #06b6d4;
+            --primary-light: #22d3ee;
+            --primary-dark: #0891b2;
         }
         
         body {
@@ -39,8 +47,8 @@
         }
         
         .card:hover {
-            border-color: rgba(147, 51, 234, 0.3);
-            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.1);
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 8px 32px rgba(6, 182, 212, 0.1);
         }
         
         header {
@@ -52,7 +60,7 @@
         }
         
         h1 {
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -60,6 +68,7 @@
             font-weight: 700;
         }
         
+        /* ... existing input styles ... */
         input {
             width: 100%;
             background: rgba(20, 20, 20, 0.9);
@@ -73,9 +82,9 @@
         
         input:focus {
             outline: none;
-            border-color: #9333ea;
+            border-color: #06b6d4;
             background: rgba(30, 30, 30, 0.95);
-            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
         }
         
         input::placeholder {
@@ -94,17 +103,18 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            text-decoration: none;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%);
             color: white;
-            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.3);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(147, 51, 234, 0.4);
+            box-shadow: 0 6px 30px rgba(6, 182, 212, 0.4);
         }
         
         .btn-secondary {
@@ -115,7 +125,7 @@
         
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(147, 51, 234, 0.3);
+            border-color: rgba(6, 182, 212, 0.3);
         }
         
         .stats {
@@ -135,14 +145,14 @@
         }
         
         .stat-card:hover {
-            border-color: rgba(147, 51, 234, 0.3);
+            border-color: rgba(6, 182, 212, 0.3);
             transform: translateY(-2px);
         }
         
         .stat-card .number {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -169,14 +179,14 @@
         }
         
         .filter-btn.active {
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
-            border-color: #9333ea;
-            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%);
+            border-color: #06b6d4;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
         }
         
         .filter-btn:hover {
-            border-color: rgba(147, 51, 234, 0.5);
-            background: rgba(147, 51, 234, 0.2);
+            border-color: rgba(6, 182, 212, 0.5);
+            background: rgba(6, 182, 212, 0.2);
         }
         
         .image-card {
@@ -190,9 +200,9 @@
         }
         
         .image-card:hover {
-            border-color: #9333ea;
+            border-color: #06b6d4;
             transform: scale(1.05);
-            box-shadow: 0 8px 32px rgba(147, 51, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3);
         }
         
         .image-card img {
@@ -221,7 +231,7 @@
         }
         
         .image-overlay button {
-            background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%);
             border: none;
             padding: 0.5rem 1.25rem;
             border-radius: 8px;
@@ -234,7 +244,7 @@
         
         .image-overlay button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.5);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.5);
         }
         
         .modal {
@@ -267,7 +277,7 @@
             max-height: 65vh;
             object-fit: contain;
             border-radius: 12px;
-            border: 2px solid rgba(147, 51, 234, 0.3);
+            border: 2px solid rgba(6, 182, 212, 0.3);
         }
         
         .modal-info {
@@ -289,7 +299,7 @@
         }
         
         .modal-info span:first-child {
-            color: #9333ea;
+            color: #06b6d4;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 12px;
@@ -310,7 +320,7 @@
         }
         
         .close-btn:hover {
-            color: #9333ea;
+            color: #06b6d4;
             transform: scale(1.1);
         }
         
@@ -324,12 +334,12 @@
         }
         
         ::-webkit-scrollbar-thumb {
-            background: rgba(147, 51, 234, 0.5);
+            background: rgba(6, 182, 212, 0.5);
             border-radius: 4px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(147, 51, 234, 0.7);
+            background: rgba(6, 182, 212, 0.7);
         }
         
         .search-container {
@@ -337,13 +347,173 @@
             gap: 0.5rem;
             flex-wrap: wrap;
         }
+
+        /* Hinzufügen von Generation-Notification-Panel Styles */
+        .generation-notification {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 400px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(6, 182, 212, 0.3); /* Updated border color */
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .generation-notification.show {
+            display: block;
+        }
+        
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        
+        .notification-close:hover {
+            color: #fff;
+        }
+        
+        .generation-status {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 0.5rem;
+        }
+        
+        .generation-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .generation-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #14b8a6); /* Updated gradient */
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        
+        .generation-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .generation-preview-item {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .generation-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .generation-preview-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(20, 20, 20, 0.9);
+        }
+        
+        .generation-preview-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(6, 182, 212, 0.3); /* Updated spinner border */
+            border-top-color: #06b6d4; /* Updated spinner border-top */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .generation-preview-percent {
+            font-size: 12px;
+            color: #06b6d4; /* Updated percent color */
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .notification-action-btn {
+            width: 100%;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #06b6d4 0%, #14b8a6 100%); /* Updated button gradient */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4); /* Updated button shadow */
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="container mx-auto flex justify-between items-center">
-            <h1>Gallery - L.O.O.M.</h1>
-            <a href="/" class="btn btn-secondary">← Generator</a>
+            <!-- Updated header title to I.R.I.S. -->
+            <h1>Gallery - I.R.I.S.</h1>
+            <div class="flex gap-3">
+                <a href="/settings" class="btn btn-secondary">Settings</a>
+                <a href="/generate" class="btn btn-primary">Generator</a>
+            </div>
         </div>
     </header>
 
@@ -384,7 +554,7 @@
         <!-- Gallery Grid -->
         <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 mb-8">
             <div class="col-span-full text-center py-12">
-                <div class="text-5xl mb-4">📂</div>
+                <div class="text-5xl mb-4">Loading...</div>
                 <div class="text-gray-400">Loading images...</div>
             </div>
         </div>
@@ -393,7 +563,7 @@
     <!-- Modal -->
     <div id="modal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">×</button>
+            <button class="close-btn" onclick="closeModal()">x</button>
             <img id="modalImage" class="modal-image" />
             <div class="modal-info" id="modalInfo"></div>
             <div class="flex gap-3 justify-center">
@@ -403,8 +573,54 @@
         </div>
     </div>
 
+    <!-- Generation Notification Panel -->
+    <div class="generation-notification" id="generationNotification">
+        <div class="notification-header">
+            <div>
+                <div style="font-weight: 600; font-size: 16px; color: #fff;">🎨 Generierung läuft</div>
+                <div class="generation-status" id="generationStatus">Vorbereitung...</div>
+            </div>
+            <button class="notification-close" onclick="closeGenerationNotification()">✕</button>
+        </div>
+        
+        <div class="generation-progress-bar">
+            <div class="generation-progress-fill" id="generationProgressFill" style="width: 0%"></div>
+        </div>
+        
+        <div class="generation-preview-grid" id="generationPreviewGrid">
+            <div class="generation-preview-item">
+                <div class="generation-preview-loading">
+                    <div class="generation-preview-spinner"></div>
+                    <div class="generation-preview-percent" id="preview1Percent">0%</div>
+                </div>
+            </div>
+            <div class="generation-preview-item">
+                <div class="generation-preview-loading">
+                    <div class="generation-preview-spinner"></div>
+                    <div class="generation-preview-percent" id="preview2Percent">0%</div>
+                </div>
+            </div>
+            <div class="generation-preview-item">
+                <div class="generation-preview-loading">
+                    <div class="generation-preview-spinner"></div>
+                    <div class="generation-preview-percent" id="preview3Percent">0%</div>
+                </div>
+            </div>
+            <div class="generation-preview-item">
+                <div class="generation-preview-loading">
+                    <div class="generation-preview-spinner"></div>
+                    <div class="generation-preview-percent" id="preview4Percent">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="notification-action-btn" onclick="window.location.href='/generate'" style="display: none;" id="viewGeneratedBtn">
+            ✨ Generierte Bilder ansehen
+        </button>
+    </div>
+
     <script>
-        const API_URL = 'http://localhost:8000/api';
+        const API_URL = '/api'; // Changed from 'http://localhost:8000/api'
         let allImages = [];
         let currentFilter = 'all';
         let currentImage = null;
@@ -421,7 +637,7 @@
                 console.error('Failed to load gallery:', error);
                 document.getElementById('galleryGrid').innerHTML = `
                     <div class="col-span-full text-center py-12">
-                        <div class="text-5xl mb-4">❌</div>
+                        <div class="text-5xl mb-4">Error</div>
                         <div class="text-red-400">Failed to load images</div>
                     </div>
                 `;
@@ -430,18 +646,9 @@
 
         function updateStats() {
             const total = allImages.length;
-            const generated = allImages.filter(f => {
-                const meta = extractMetadata(f);
-                return meta.type === 'generated';
-            }).length;
-            const upscaled = allImages.filter(f => {
-                const meta = extractMetadata(f);
-                return meta.type === 'upscaled';
-            }).length;
-            const variations = allImages.filter(f => {
-                const meta = extractMetadata(f);
-                return meta.type === 'variation';
-            }).length;
+            const generated = allImages.filter(f => getImageType(f) === 'generated').length;
+            const upscaled = allImages.filter(f => getImageType(f) === 'upscaled').length;
+            const variations = allImages.filter(f => getImageType(f) === 'variation').length;
             
             document.getElementById('totalImages').textContent = total;
             document.getElementById('generatedCount').textContent = generated;
@@ -449,54 +656,11 @@
             document.getElementById('variationCount').textContent = variations;
         }
 
-        function extractMetadata(filename) {
-            const name = filename.replace('.png', '');
-            const parts = name.split('_');
-            
-            const metadata = {
-                type: 'unknown',
-                date: null,
-                time: null,
-                seed: null,
-                scale: null
-            };
-            
-            if (parts.length >= 4) {
-                const typePrefix = parts[0];
-                
-                if (typePrefix === 'gen') {
-                    metadata.type = 'generated';
-                } else if (typePrefix === 'var') {
-                    metadata.type = 'variation';
-                } else if (typePrefix.startsWith('up')) {
-                    metadata.type = 'upscaled';
-                    const scaleMatch = typePrefix.match(/up(\d+)x/);
-                    if (scaleMatch) {
-                        metadata.scale = parseInt(scaleMatch[1]);
-                    }
-                }
-                
-                metadata.date = parts[1] || null;
-                metadata.time = parts[2] || null;
-                metadata.seed = parts[3] && !isNaN(parts[3]) ? parseInt(parts[3]) : null;
-            }
-            
-            // Fallback for old format
-            if (metadata.type === 'unknown') {
-                if (filename.startsWith('generated_')) metadata.type = 'generated';
-                else if (filename.startsWith('variation_')) metadata.type = 'variation';
-                else if (filename.startsWith('upscaled')) metadata.type = 'upscaled';
-                
-                // Try to extract seed from old format
-                const seedMatch = filename.match(/_(\d{4,})_/);
-                if (seedMatch) metadata.seed = parseInt(seedMatch[1]);
-            }
-            
-            return metadata;
-        }
-
         function getImageType(filename) {
-            return extractMetadata(filename).type;
+            if (filename.startsWith('gen_') || filename.startsWith('generated_')) return 'generated';
+            if (filename.startsWith('var_') || filename.startsWith('variation_')) return 'variation';
+            if (filename.startsWith('up') || filename.startsWith('upscaled')) return 'upscaled';
+            return 'unknown';
         }
 
         function filterByType(type) {
@@ -520,7 +684,7 @@
             if (filtered.length === 0) {
                 galleryGrid.innerHTML = `
                     <div class="col-span-full text-center py-12">
-                        <div class="text-5xl mb-4">📭</div>
+                        <div class="text-5xl mb-4">Empty</div>
                         <div class="text-gray-400">No images found</div>
                     </div>
                 `;
@@ -532,35 +696,22 @@
                 const card = document.createElement('div');
                 card.className = 'image-card';
                 
-                const metadata = extractMetadata(filename);
-                const type = metadata.type;
-                const seed = metadata.seed || 'unknown';
-                
+                const type = getImageType(filename);
                 const typeEmoji = {
-                    'generated': '🎨',
-                    'upscaled': '⬆️',
-                    'variation': '🔀',
-                    'unknown': '❓'
-                }[type] || '❓';
-                
-                let dateStr = 'Unknown';
-                if (metadata.date && metadata.time) {
-                    const date = metadata.date;
-                    const time = metadata.time;
-                    dateStr = `${date} ${time.substring(0,2)}:${time.substring(2,4)}`;
-                } else {
-                    dateStr = filename.substring(0, 25);
-                }
+                    'generated': 'G',
+                    'upscaled': 'U',
+                    'variation': 'V',
+                    'unknown': '?'
+                }[type] || '?';
                 
                 card.innerHTML = `
-                    <img src="${API_URL}/output-image/${filename}" alt="${filename}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22%3E%3Crect fill=%22%23333%22 width=%22200%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EError%3C/text%3E%3C/svg%3E'" />
+                    <img src="${API_URL}/output-image/${filename}" alt="${filename}" onerror="this.src='/placeholder.svg?height=200&width=200'" />
                     <div class="image-overlay">
                         <div class="text-white text-center">
-                            <div class="text-3xl mb-2">${typeEmoji}</div>
-                            <div class="text-xs text-gray-300 mb-2">${dateStr}</div>
-                            <div class="text-xs font-mono" style="color: #9333ea;">Seed: ${seed}</div>
+                            <div class="text-2xl mb-2">${typeEmoji}</div>
+                            <div class="text-xs text-gray-300">${filename.substring(0, 20)}...</div>
                         </div>
-                        <button onclick="openModal('${filename}', '${seed}', '${type}', '${metadata.date}', '${metadata.time}', ${metadata.scale})">View Full</button>
+                        <button onclick="openModal('${filename}')">View Full</button>
                     </div>
                 `;
                 
@@ -568,51 +719,28 @@
             });
         }
 
-        function openModal(filename, seed, type, date, time, scale) {
-            currentImage = { filename, seed, type, date, time, scale };
+        function openModal(filename) {
+            currentImage = { filename };
             document.getElementById('modalImage').src = API_URL + `/output-image/${filename}`;
             
-            const typeEmoji = {
-                'generated': '🎨 Generated',
-                'upscaled': '⬆️ Upscaled',
-                'variation': '🔀 Variation',
-                'unknown': '❓ Unknown'
-            }[type] || 'Unknown';
+            const type = getImageType(filename);
+            const typeLabel = {
+                'generated': 'Generated',
+                'upscaled': 'Upscaled',
+                'variation': 'Variation',
+                'unknown': 'Unknown'
+            }[type];
             
-            let dateTimeStr = 'Unknown';
-            if (date && date !== 'null' && time && time !== 'null') {
-                dateTimeStr = `${date} ${time.substring(0,2)}:${time.substring(2,4)}:${time.substring(4,6)}`;
-            }
-            
-            let infoHTML = `
+            document.getElementById('modalInfo').innerHTML = `
                 <div>
                     <span>Filename</span>
-                    <span class="text-right break-words text-gray-300">${filename}</span>
+                    <span class="text-right text-gray-300">${filename}</span>
                 </div>
                 <div>
                     <span>Type</span>
-                    <span class="text-right text-gray-300">${typeEmoji}</span>
-                </div>
-                <div>
-                    <span>Seed</span>
-                    <span class="text-right font-mono text-gray-300">${seed}</span>
-                </div>
-                <div>
-                    <span>Created</span>
-                    <span class="text-right text-gray-300">${dateTimeStr}</span>
+                    <span class="text-right text-gray-300">${typeLabel}</span>
                 </div>
             `;
-            
-            if (scale && scale !== 'null') {
-                infoHTML += `
-                    <div>
-                        <span>Scale</span>
-                        <span class="text-right text-gray-300">${scale}x</span>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('modalInfo').innerHTML = infoHTML;
             document.getElementById('modal').classList.add('active');
         }
 
@@ -629,16 +757,17 @@
             link.click();
         }
 
-        document.getElementById('searchInput').addEventListener('input', () => {
-            renderGallery();
-        });
+        function closeGenerationNotification() {
+            document.getElementById('generationNotification').classList.remove('show');
+        }
 
+        document.getElementById('searchInput').addEventListener('input', renderGallery);
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
 
+        // Initialize
         loadGallery();
-        setInterval(loadGallery, 10000);
     </script>
 </body>
 </html>

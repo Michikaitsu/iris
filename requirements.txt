@@ -26,6 +26,7 @@ discord.py==2.3.2
 python-dotenv==1.0.0
 pydantic==2.5.0
 aiofiles==23.2.1
+loguru==0.7.2
 
 # Optional: Performance Boost (uncomment if you have compatible GPU)
 # xformers==0.0.23  # Requires specific CUDA version

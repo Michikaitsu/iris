@@ -38,12 +38,12 @@ class AIGeneratorLogger:
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(file_formatter)
         
-        # Console handler (user-friendly output) - Added encoding handling for Windows
+        # Console handler (user-friendly output)
         console_formatter = logging.Formatter(
             '%(message)s'
         )
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.INFO)
+        console_handler.setLevel(logging.DEBUG)
         console_handler.setFormatter(console_formatter)
         # Fix encoding issues on Windows
         if sys.stdout.encoding and 'utf' not in sys.stdout.encoding.lower():
