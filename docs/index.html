@@ -5,92 +5,819 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>IRIS – Documentation</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Custom Styles -->
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body class="font-['Outfit']">
 
 <canvas id="starfield"></canvas>
 
-<header class="max-w-6xl mx-auto px-6 py-24 text-center">
-  <h1 class="text-5xl md:text-6xl font-bold text-gradient mb-6">
-    IRIS
-  </h1>
-  <p class="text-muted text-lg max-w-2xl mx-auto">
-    Interactive Reasoning Intelligence System – Architektur, Setup und Konzepte
-  </p>
-</header>
+<!-- Added navigation tabs -->
+<!-- Sticky Navigation -->
+<nav class="glass sticky top-0 z-50 backdrop-blur-lg">
+  <div class="max-w-6xl mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <a href="#home" class="text-2xl font-bold text-gradient hover:no-underline">IRIS</a>
+      
+      <div class="flex items-center gap-2 overflow-x-auto">
+        <button class="nav-btn active" data-section="home">Home</button>
+        <button class="nav-btn" data-section="search">Search</button>
+        <button class="nav-btn" data-section="setup">Setup</button>
+        <button class="nav-btn" data-section="usage">Usage</button>
+        <button class="nav-btn" data-section="prompts">Prompts</button>
+        <button class="nav-btn" data-section="artifacts">Artifacts</button>
+        <button class="nav-btn" data-section="faq">FAQ</button>
+        <button class="nav-btn" data-section="troubleshooting">Troubleshooting</button>
+        <button class="nav-btn" data-section="api">API</button>
+      </div>
+    </div>
+  </div>
+</nav>
 
-<section class="max-w-6xl mx-auto px-6 grid gap-8 md:grid-cols-3 pb-24">
-  <a href="search.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">🔍 Search</h2>
-    <p class="text-muted">Find answers quickly</p>
-  </a>
+<!-- Main Container -->
+<main class="max-w-6xl mx-auto px-6">
 
-  <a href="setup.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Setup</h2>
-    <p class="text-muted">Installation, Konfiguration und erste Schritte</p>
-  </a>
+  <!-- HOME SECTION -->
+  <section id="home" class="page-section active">
+    <header class="py-24 text-center">
+      <h1 class="text-5xl md:text-6xl font-bold text-gradient mb-6">IRIS</h1>
+      <p class="text-muted text-lg max-w-2xl mx-auto">
+        Interactive Reasoning Intelligence System – Architecture, Setup & Concepts
+      </p>
+    </header>
 
-  <a href="faq.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">FAQ</h2>
-    <p class="text-muted">Frequently asked questions</p>
-  </a>
+    <div class="grid gap-8 md:grid-cols-3 pb-24">
+      <a href="#search" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('search')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-search mr-2"></i>Search</h2>
+        <p class="text-muted">Find answers quickly</p>
+      </a>
 
-  <a href="usage.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Usage Guide</h2>
-    <p class="text-muted">Detailed usage instructions</p>
-  </a>
+      <a href="#setup" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('setup')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-cog mr-2"></i>Setup</h2>
+        <p class="text-muted">Installation, configuration and first steps</p>
+      </a>
 
-  <a href="artifacts.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Artifacts</h2>
-    <p class="text-muted">Architektur, Module und Datenflüsse</p>
-  </a>
+      <a href="#faq" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('faq')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-question-circle mr-2"></i>FAQ</h2>
+        <p class="text-muted">Frequently asked questions</p>
+      </a>
 
-  <a href="prompts.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Prompt Engineering</h2>
-    <p class="text-muted">Write better prompts</p>
-  </a>
+      <a href="#usage" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('usage')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-book-open mr-2"></i>Usage Guide</h2>
+        <p class="text-muted">Detailed usage instructions</p>
+      </a>
 
-  <a href="troubleshooting.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Troubleshooting</h2>
-    <p class="text-muted">Fix common problems</p>
-  </a>
+      <a href="#artifacts" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('artifacts')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-image mr-2"></i>Artifacts</h2>
+        <p class="text-muted">Architecture, modules and data flows</p>
+      </a>
 
-  <a href="api.html" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">API Reference</h2>
-    <p class="text-muted">Integration and development</p>
-  </a>
+      <a href="#prompts" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('prompts')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-pen-fancy mr-2"></i>Prompt Engineering</h2>
+        <p class="text-muted">Write better prompts</p>
+      </a>
 
-  <a href="assets/screenshots/" class="glass p-6 rounded-xl reveal hover:no-underline">
-    <h2 class="text-xl font-semibold mb-2">Screenshots</h2>
-    <p class="text-muted">UI, Prozesse und Beispiele</p>
-  </a>
-</section>
+      <a href="#troubleshooting" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('troubleshooting')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-tools mr-2"></i>Troubleshooting</h2>
+        <p class="text-muted">Fix common problems</p>
+      </a>
+
+      <a href="#api" class="glass p-6 rounded-xl reveal hover:no-underline" onclick="navigateTo('api')">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-code mr-2"></i>API Reference</h2>
+        <p class="text-muted">Integration and development</p>
+      </a>
+
+      <a href="assets/screenshots/" class="glass p-6 rounded-xl reveal hover:no-underline">
+        <h2 class="text-xl font-semibold mb-2"><i class="fas fa-images mr-2"></i>Screenshots</h2>
+        <p class="text-muted">UI, processes and examples</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- SEARCH SECTION -->
+  <section id="search" class="page-section">
+    <div class="py-12">
+      <div class="text-center mb-8 reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-search mr-3"></i>Search Documentation
+        </h1>
+        <p class="text-lg text-muted">Find answers quickly across all documentation</p>
+      </div>
+
+      <div class="glass p-6 rounded-xl reveal mb-12">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search for anything... (Press / to focus)" 
+            class="w-full px-6 py-4 bg-black/40 border border-white/10 rounded-lg text-lg focus:outline-none focus:border-purple-500 transition-colors"
+            autocomplete="off"
+          />
+          <i class="fas fa-search absolute right-6 top-1/2 -translate-y-1/2 text-muted text-xl"></i>
+        </div>
+        
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="text-sm text-muted">Quick searches:</span>
+          <button class="quick-search text-xs glass px-3 py-1 rounded-full hover:border-purple-500" data-query="installation">Installation</button>
+          <button class="quick-search text-xs glass px-3 py-1 rounded-full hover:border-purple-500" data-query="cuda">CUDA</button>
+          <button class="quick-search text-xs glass px-3 py-1 rounded-full hover:border-purple-500" data-query="prompts">Prompts</button>
+          <button class="quick-search text-xs glass px-3 py-1 rounded-full hover:border-purple-500" data-query="memory">Memory</button>
+        </div>
+      </div>
+
+      <div id="searchStats" class="text-center text-muted mb-6 hidden">
+        Found <span id="resultCount" class="text-gradient font-semibold">0</span> results
+      </div>
+
+      <div id="searchResults" class="space-y-6"></div>
+
+      <div id="emptyState" class="text-center py-24 reveal">
+        <i class="fas fa-book-open text-6xl text-muted mb-6"></i>
+        <h2 class="text-2xl font-semibold mb-3">Start Searching</h2>
+        <p class="text-muted max-w-md mx-auto">
+          Type your question or topic in the search box above
+        </p>
+      </div>
+
+      <div id="noResults" class="text-center py-24 hidden">
+        <i class="fas fa-search text-6xl text-muted mb-6"></i>
+        <h2 class="text-2xl font-semibold mb-3">No Results Found</h2>
+        <p class="text-muted max-w-md mx-auto">Try different keywords</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETUP SECTION -->
+  <section id="setup" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4"><i class="fas fa-cog mr-3"></i>Setup Guide</h1>
+        <p class="text-lg text-muted">
+          Complete Installation Guide for <strong>I.R.I.S.</strong><br>
+          <span class="italic">Intelligent Rendering & Image Synthesis</span>
+        </p>
+      </div>
+
+      <div class="glass p-8 rounded-xl mb-12 reveal">
+        <h2 class="text-2xl font-semibold mb-4"><i class="fas fa-list mr-2"></i>Contents</h2>
+        <ul class="space-y-2 text-muted">
+          <li><a href="#requirements" class="hover:text-gradient">System Requirements</a></li>
+          <li><a href="#prerequisites" class="hover:text-gradient">Prerequisites</a></li>
+          <li><a href="#installation" class="hover:text-gradient">Installation</a></li>
+          <li><a href="#configuration" class="hover:text-gradient">Configuration</a></li>
+          <li><a href="#first-run" class="hover:text-gradient">First Run</a></li>
+        </ul>
+      </div>
+
+      <div id="requirements" class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-desktop mr-2"></i>System Requirements</h2>
+        <div class="glass p-6 rounded-xl overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-muted">
+                <th class="pb-3">Tier</th>
+                <th class="pb-3">GPU</th>
+                <th class="pb-3">VRAM</th>
+                <th class="pb-3">RAM</th>
+                <th class="pb-3">Storage</th>
+                <th class="pb-3">Performance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t border-white/10"><td class="py-2">Minimum</td><td>GTX 1650</td><td>4GB</td><td>8GB</td><td>20GB</td><td>~6 min</td></tr>
+              <tr class="border-t border-white/10"><td class="py-2">Recommended</td><td>RTX 3060</td><td>12GB</td><td>16GB</td><td>50GB</td><td>~2 min</td></tr>
+              <tr class="border-t border-white/10"><td class="py-2">High-End</td><td>RTX 4090</td><td>24GB</td><td>32GB</td><td>100GB</td><td>~30 sec</td></tr>
+              <tr class="border-t border-white/10"><td class="py-2">CPU Only</td><td>8+ cores</td><td>–</td><td>16GB+</td><td>20GB</td><td>30–60 min</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="prerequisites" class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-box mr-2"></i>Prerequisites</h2>
+        <div class="glass p-6 rounded-xl space-y-4">
+          <p><strong>Required:</strong> Python 3.9–3.11, Git, CUDA (optional)</p>
+          <pre class="bg-black/40 p-4 rounded-lg text-sm overflow-x-auto">winget install Python.Python.3.11
+python --version</pre>
+        </div>
+      </div>
+
+      <div id="installation" class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-download mr-2"></i>Installation</h2>
+        <div class="glass p-6 rounded-xl space-y-4">
+          <pre class="bg-black/40 p-4 rounded-lg text-sm overflow-x-auto">git clone https://github.com/yourusername/iris-image-synthesis.git
+cd iris-image-synthesis
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt</pre>
+        </div>
+      </div>
+
+      <div id="configuration" class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-sliders-h mr-2"></i>Configuration</h2>
+        <div class="glass p-6 rounded-xl">
+          <p class="mb-4">For the web UI, <strong>no configuration is needed</strong>.</p>
+          <pre class="bg-black/40 p-4 rounded-lg text-sm">python src/start.py web</pre>
+        </div>
+      </div>
+
+      <div id="first-run" class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-play mr-2"></i>First Run</h2>
+        <div class="glass p-6 rounded-xl space-y-4">
+          <pre class="bg-black/40 p-4 rounded-lg text-sm">Server ready at http://localhost:8000</pre>
+          <p>Open your browser and start generating images.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USAGE SECTION -->
+  <section id="usage" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-book-open mr-3"></i>Usage Guide
+        </h1>
+        <p class="text-lg text-muted">
+          Master <strong>IRIS</strong> with this comprehensive guide
+        </p>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-paint-brush mr-2"></i>Basic Usage</h2>
+        
+        <div class="space-y-6">
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-3">1. Launch the Web Interface</h3>
+            <pre class="bg-black/40 p-4 rounded-lg text-sm">python src/start.py web</pre>
+            <p class="text-muted mt-3">Open your browser to <code class="bg-black/40 px-2 py-1 rounded">http://localhost:8000</code></p>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-3">2. Write Your Prompt</h3>
+            <p class="text-muted mb-3">Describe what you want to see:</p>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic">
+              "a detailed portrait of a cyberpunk warrior, neon lighting, highly detailed, masterpiece, 8k"
+            </div>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-3">3. Adjust Parameters</h3>
+            <ul class="text-muted space-y-2">
+              <li><strong>Steps:</strong> 20-30 for most images</li>
+              <li><strong>CFG Scale:</strong> 8-12 for balanced results</li>
+              <li><strong>Resolution:</strong> Start with 512×512</li>
+            </ul>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-3">4. Generate!</h3>
+            <p class="text-muted">Click "Generate" and wait for your masterpiece.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-bolt mr-2"></i>Parameters Explained</h2>
+
+        <div class="space-y-4">
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-2">CFG Scale (Guidance)</h3>
+            <p class="text-muted mb-3">Controls how closely the AI follows your prompt.</p>
+            <ul class="text-muted space-y-1 list-disc list-inside">
+              <li><strong>Low (5-7):</strong> More creative, less accurate</li>
+              <li><strong>Medium (8-12):</strong> Balanced (recommended)</li>
+              <li><strong>High (15+):</strong> Very literal, may oversaturate</li>
+            </ul>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-xl font-semibold mb-2">Sampling Steps</h3>
+            <p class="text-muted mb-3">Number of refinement iterations.</p>
+            <ul class="text-muted space-y-1 list-disc list-inside">
+              <li><strong>20 steps:</strong> Fast, good quality</li>
+              <li><strong>30-50 steps:</strong> Better quality</li>
+              <li><strong>50+ steps:</strong> Diminishing returns</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROMPTS SECTION -->
+  <section id="prompts" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-pen-fancy mr-3"></i>Prompt Engineering
+        </h1>
+        <p class="text-lg text-muted">Master the art of writing effective prompts</p>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-edit mr-2"></i>Prompt Structure</h2>
+
+        <div class="glass p-8 rounded-xl space-y-6">
+          <div class="bg-black/40 p-6 rounded-lg border-l-4 border-purple-500">
+            <div class="text-sm text-muted mb-2">Basic Template:</div>
+            <div class="font-mono text-sm">
+              [Subject] + [Style] + [Quality] + [Details]
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <h3 class="font-semibold mb-2">1. Subject (What)</h3>
+              <p class="text-muted">The main focus: "a warrior", "mountain landscape", "futuristic city"</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold mb-2">2. Style (How it looks)</h3>
+              <p class="text-muted">Art style: "digital art", "oil painting", "photorealistic", "anime"</p>
+            </div>
+
+            <div>
+              <h3 class="font-semibold mb-2">3. Quality Tags</h3>
+              <p class="text-muted">Modifiers: "masterpiece", "highly detailed", "8k", "professional"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-star mr-2"></i>Effective Examples</h2>
+
+        <div class="space-y-6">
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-lg font-semibold mb-2"><i class="fas fa-user mr-2"></i>Portrait Photography</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "close-up portrait of a woman, studio lighting, bokeh background, professional photography, highly detailed, 8k, photorealistic"
+            </div>
+            <p class="text-muted text-sm">Good for: Professional headshots, character portraits</p>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <h3 class="text-lg font-semibold mb-2"><i class="fas fa-robot mr-2"></i>Cyberpunk Scene</h3>
+            <div class="bg-black/40 p-4 rounded-lg text-sm italic mb-3">
+              "cyberpunk city street at night, neon lights, rain puddles reflecting lights, blade runner style, cinematic composition"
+            </div>
+            <p class="text-muted text-sm">Good for: Sci-fi environments, atmospheric scenes</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-ban mr-2"></i>Negative Prompts</h2>
+
+        <div class="glass p-8 rounded-xl space-y-4">
+          <p class="text-muted">Tell the AI what you DON'T want. Essential for quality results.</p>
+
+          <div class="bg-black/40 p-4 rounded-lg">
+            <div class="text-sm text-muted mb-2">Common Negative Prompt:</div>
+            <div class="text-sm italic">
+              "low quality, worst quality, blurry, distorted, ugly, deformed, disfigured, bad anatomy, wrong anatomy, extra limbs, watermark, text, error"
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARTIFACTS SECTION -->
+  <section id="artifacts" class="page-section">
+    <div class="py-24 space-y-24">
+      <div class="text-center space-y-4 reveal">
+        <h1 class="text-5xl font-bold text-gradient"><i class="fas fa-image mr-3"></i>Artifact Gallery</h1>
+        <p class="text-lg text-muted">
+          When AI gets a little <em>too</em> creative.<br>
+          <span class="opacity-70">Common artifacts & how to deal with them</span>
+        </p>
+      </div>
+
+      <div class="glass p-8 reveal space-y-4">
+        <h2 class="text-2xl font-semibold"><i class="fas fa-question mr-2"></i>What Are Artifacts?</h2>
+        <p class="text-muted">
+          Artifacts are visual errors caused by conflicting data, resolution limits or prompt ambiguity.
+        </p>
+      </div>
+
+      <div class="space-y-12">
+        <div class="glass p-8 reveal space-y-3">
+          <h3 class="text-xl font-semibold"><i class="fas fa-users mr-2"></i>The Clone Saga</h3>
+          <p><strong>Symptom:</strong> Two (or more) heads, merged faces</p>
+          <p><strong>Cause:</strong> High resolution (1024px+)</p>
+          <p><strong>Fix:</strong> Use <code>512×768</code> and upscale</p>
+        </div>
+
+        <div class="glass p-8 reveal space-y-3">
+          <h3 class="text-xl font-semibold"><i class="fas fa-hand-paper mr-2"></i>Hand Horror</h3>
+          <p><strong>Symptom:</strong> 6+ fingers, backwards thumbs</p>
+          <p><strong>Cause:</strong> Confusing hand pose training data</p>
+          <p><strong>Fix:</strong> Add <code>normal hands, five fingers</code> to prompt</p>
+        </div>
+
+        <div class="glass p-8 reveal space-y-3">
+          <h3 class="text-xl font-semibold"><i class="fas fa-font mr-2"></i>Almost-Words</h3>
+          <p><strong>Symptom:</strong> Text like "ČÅFĒ" instead of "CAFE"</p>
+          <p><strong>Cause:</strong> Stable Diffusion is bad at text</p>
+          <p><strong>Fix:</strong> Add text in post-processing or use SDXL</p>
+        </div>
+      </div>
+
+      <div class="glass p-8 reveal space-y-4">
+        <h2 class="text-2xl font-semibold"><i class="fas fa-shield-alt mr-2"></i>Prevention Tips</h2>
+        <ol class="list-decimal list-inside space-y-1 text-muted">
+          <li>Start small: 512×512 → upscale</li>
+          <li>Strong negatives</li>
+          <li>Simple prompts beat complex ones</li>
+          <li>Test different seeds</li>
+          <li>CFG sweet spot: 8–12 (not 20)</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-question-circle mr-3"></i>FAQ
+        </h1>
+        <p class="text-lg text-muted">Frequently Asked Questions about <strong>IRIS</strong></p>
+      </div>
+
+      <div class="glass p-4 rounded-xl mb-12 reveal">
+        <input 
+          type="text" 
+          id="faqSearch" 
+          placeholder="Search FAQ..." 
+          class="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-lg focus:outline-none focus:border-purple-500"
+        />
+      </div>
+
+      <div class="flex flex-wrap gap-3 mb-12 reveal">
+        <button class="faq-filter active glass px-4 py-2 rounded-lg transition-all" data-category="all">All</button>
+        <button class="faq-filter glass px-4 py-2 rounded-lg transition-all" data-category="beginner">Beginner</button>
+        <button class="faq-filter glass px-4 py-2 rounded-lg transition-all" data-category="technical">Technical</button>
+        <button class="faq-filter glass px-4 py-2 rounded-lg transition-all" data-category="usage">Usage</button>
+        <button class="faq-filter glass px-4 py-2 rounded-lg transition-all" data-category="advanced">Advanced</button>
+      </div>
+
+      <div id="faqContainer" class="space-y-6">
+        
+        <div class="faq-item glass p-6 rounded-xl reveal" data-category="beginner" data-keywords="what is iris stable diffusion ai image">
+          <button class="faq-question w-full text-left flex items-start justify-between group">
+            <h3 class="text-xl font-semibold group-hover:text-gradient pr-4">What is IRIS?</h3>
+            <i class="fas fa-chevron-down text-muted transition-transform group-hover:text-gradient"></i>
+          </button>
+          <div class="faq-answer hidden mt-4 text-muted space-y-2">
+            <p>IRIS (Intelligent Rendering & Image Synthesis) is a Stable Diffusion-based image generation system.</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass p-6 rounded-xl reveal" data-category="beginner" data-keywords="gpu requirements rtx cuda vram minimum">
+          <button class="faq-question w-full text-left flex items-start justify-between group">
+            <h3 class="text-xl font-semibold group-hover:text-gradient pr-4">What GPU do I need?</h3>
+            <i class="fas fa-chevron-down text-muted transition-transform group-hover:text-gradient"></i>
+          </button>
+          <div class="faq-answer hidden mt-4 text-muted space-y-2">
+            <p><strong>Minimum:</strong> GTX 1650 with 4GB VRAM</p>
+            <p><strong>Recommended:</strong> RTX 3060 with 12GB VRAM</p>
+            <p><strong>High-End:</strong> RTX 4090 with 24GB VRAM</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass p-6 rounded-xl reveal" data-category="usage" data-keywords="write prompts good effective">
+          <button class="faq-question w-full text-left flex items-start justify-between group">
+            <h3 class="text-xl font-semibold group-hover:text-gradient pr-4">How do I write good prompts?</h3>
+            <i class="fas fa-chevron-down text-muted transition-transform group-hover:text-gradient"></i>
+          </button>
+          <div class="faq-answer hidden mt-4 text-muted space-y-2">
+            <p>Start with a clear subject, add style tags, and include quality descriptors.</p>
+            <p><strong>Example:</strong> "a detailed portrait of a cyberpunk warrior, neon lighting, masterpiece, 8k"</p>
+          </div>
+        </div>
+
+        <div class="faq-item glass p-6 rounded-xl reveal" data-category="technical" data-keywords="cuda not detected pytorch nvidia">
+          <button class="faq-question w-full text-left flex items-start justify-between group">
+            <h3 class="text-xl font-semibold group-hover:text-gradient pr-4">CUDA not detected?</h3>
+            <i class="fas fa-chevron-down text-muted transition-transform group-hover:text-gradient"></i>
+          </button>
+          <div class="faq-answer hidden mt-4 text-muted space-y-2">
+            <p>Solutions:</p>
+            <ol class="list-decimal list-inside space-y-1">
+              <li>Update NVIDIA drivers</li>
+              <li>Reinstall PyTorch with matching CUDA version</li>
+              <li>Verify GPU compatibility</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="faq-item glass p-6 rounded-xl reveal" data-category="technical" data-keywords="out of memory vram error cuda oom">
+          <button class="faq-question w-full text-left flex items-start justify-between group">
+            <h3 class="text-xl font-semibold group-hover:text-gradient pr-4">Out of Memory errors?</h3>
+            <i class="fas fa-chevron-down text-muted transition-transform group-hover:text-gradient"></i>
+          </button>
+          <div class="faq-answer hidden mt-4 text-muted space-y-2">
+            <ul class="list-disc list-inside space-y-1">
+              <li>Reduce image resolution (try 512x512)</li>
+              <li>Lower batch size to 1</li>
+              <li>Enable DRAM extension</li>
+              <li>Close other GPU applications</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- TROUBLESHOOTING SECTION -->
+  <section id="troubleshooting" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-tools mr-3"></i>Troubleshooting
+        </h1>
+        <p class="text-lg text-muted">Solutions to common problems</p>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-bolt mr-2"></i>Quick Fixes</h2>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="glass p-6 rounded-xl">
+            <i class="fas fa-memory text-3xl text-gradient mb-3"></i>
+            <h3 class="text-xl font-semibold mb-2">Out of Memory</h3>
+            <ul class="text-muted text-sm space-y-1 list-disc list-inside">
+              <li>Reduce resolution to 512×512</li>
+              <li>Lower batch size to 1</li>
+              <li>Enable DRAM extension</li>
+              <li>Close other applications</li>
+            </ul>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <i class="fas fa-bolt text-3xl text-gradient mb-3"></i>
+            <h3 class="text-xl font-semibold mb-2">CUDA Not Detected</h3>
+            <ul class="text-muted text-sm space-y-1 list-disc list-inside">
+              <li>Update NVIDIA drivers</li>
+              <li>Reinstall PyTorch + CUDA</li>
+              <li>Verify GPU in Device Manager</li>
+              <li>Check CUDA installation</li>
+            </ul>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <i class="fas fa-hourglass-half text-3xl text-gradient mb-3"></i>
+            <h3 class="text-xl font-semibold mb-2">Slow Generation</h3>
+            <ul class="text-muted text-sm space-y-1 list-disc list-inside">
+              <li>Update GPU drivers</li>
+              <li>Check GPU utilization</li>
+              <li>Close background processes</li>
+              <li>Verify CPU isn't bottlenecking</li>
+            </ul>
+          </div>
+
+          <div class="glass p-6 rounded-xl">
+            <i class="fas fa-image text-3xl text-gradient mb-3"></i>
+            <h3 class="text-xl font-semibold mb-2">Poor Image Quality</h3>
+            <ul class="text-muted text-sm space-y-1 list-disc list-inside">
+              <li>Adjust CFG scale (8-12)</li>
+              <li>Increase sampling steps</li>
+              <li>Improve prompt quality</li>
+              <li>Add negative prompts</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- API SECTION -->
+  <section id="api" class="page-section">
+    <div class="py-24">
+      <div class="glass p-10 rounded-2xl mb-16 text-center reveal">
+        <h1 class="text-5xl font-bold text-gradient mb-4">
+          <i class="fas fa-code mr-3"></i>API Reference
+        </h1>
+        <p class="text-lg text-muted">Integrate IRIS into your applications</p>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-rocket mr-2"></i>Getting Started</h2>
+
+        <div class="glass p-6 rounded-xl space-y-4">
+          <div>
+            <h3 class="font-semibold mb-2">Base URL</h3>
+            <code class="bg-black/40 px-4 py-2 rounded block">http://localhost:8000/api/v1</code>
+          </div>
+
+          <div>
+            <h3 class="font-semibold mb-2">Authentication</h3>
+            <p class="text-muted text-sm">API key required for external access. Include in header:</p>
+            <code class="bg-black/40 px-4 py-2 rounded block text-sm mt-2">Authorization: Bearer YOUR_API_KEY</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-plug mr-2"></i>Endpoints</h2>
+
+        <div class="glass p-6 rounded-xl mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded text-sm font-mono">POST</span>
+            <code class="text-lg">/generate</code>
+          </div>
+
+          <p class="text-muted mb-4">Generate images from text prompts.</p>
+
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-semibold mb-2">Request Body:</h4>
+              <pre class="bg-black/40 p-4 rounded-lg text-xs overflow-x-auto"><code>{
+  "prompt": "a detailed portrait, highly detailed",
+  "negative_prompt": "low quality, blurry",
+  "steps": 30,
+  "cfg_scale": 8,
+  "width": 512,
+  "height": 512
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-16 reveal">
+        <h2 class="text-3xl font-bold mb-6"><i class="fas fa-laptop-code mr-2"></i>Code Examples</h2>
+
+        <div class="glass p-6 rounded-xl">
+          <h3 class="text-xl font-semibold mb-4"><i class="fab fa-python mr-2"></i>Python</h3>
+          <pre class="bg-black/40 p-4 rounded-lg text-xs overflow-x-auto"><code>import requests
+
+url = "http://localhost:8000/api/v1/generate"
+data = {
+    "prompt": "a detailed portrait, highly detailed",
+    "steps": 30,
+    "cfg_scale": 8
+}
+
+response = requests.post(url, json=data)
+result = response.json()</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
 
 <footer class="text-center text-muted py-16">
   <span class="text-sm">© 2025 IRIS – built by Kai</span>
 </footer>
 
-<!-- Starfield Script -->
-<script src="/docs/assets/js/starfield.js"></script>
+<!-- Scripts -->
+<script src="assets/js/starfield.js"></script>
+<script src="assets/js/search.js"></script>
 
-<!-- Reveal Animation Script -->
 <script>
+  // Page Navigation
+  function navigateTo(section) {
+    // Hide all sections
+    document.querySelectorAll('.page-section').forEach(s => {
+      s.classList.remove('active');
+    });
+    
+    // Show target section
+    const target = document.getElementById(section);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Update nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.section === section) {
+        btn.classList.add('active');
+      }
+    });
+    
+    // Update URL hash
+    window.location.hash = section;
+  }
+
+  // Nav button click handlers
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      navigateTo(btn.dataset.section);
+    });
+  });
+
+  // Handle URL hash on load
+  window.addEventListener('load', () => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      navigateTo(hash);
+    }
+  });
+
+  // Handle browser back/forward
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      navigateTo(hash);
+    } else {
+      navigateTo('home');
+    }
+  });
+
+  // Prevent default anchor behavior for internal links
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href.length > 1) {
+        e.preventDefault();
+        const section = href.slice(1);
+        navigateTo(section);
+      }
+    });
+  });
+
+  // Reveal animation
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => e.isIntersecting && e.target.classList.add("active"));
   }, { threshold: 0.1 });
-
   document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+  // FAQ Accordion
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const answer = btn.nextElementSibling;
+      const icon = btn.querySelector('i');
+      
+      answer.classList.toggle('hidden');
+      icon.classList.toggle('fa-chevron-down');
+      icon.classList.toggle('fa-chevron-up');
+    });
+  });
+
+  // FAQ Filter
+  const filterBtns = document.querySelectorAll('.faq-filter');
+  const faqItems = document.querySelectorAll('.faq-item');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active', 'bg-purple-500/20', 'border-purple-500'));
+      btn.classList.add('active', 'bg-purple-500/20', 'border-purple-500');
+
+      const category = btn.getAttribute('data-category');
+
+      faqItems.forEach(item => {
+        if (category === 'all' || item.getAttribute('data-category') === category) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // FAQ Search
+  const faqSearchInput = document.getElementById('faqSearch');
+  if (faqSearchInput) {
+    faqSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question h3').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+        const keywords = item.getAttribute('data-keywords').toLowerCase();
+
+        if (question.includes(query) || answer.includes(query) || keywords.includes(query)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Search keyboard shortcut (/)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+      e.preventDefault();
+      navigateTo('search');
+      setTimeout(() => document.getElementById('searchInput')?.focus(), 100);
+    }
+  });
 </script>
 
 </body>
