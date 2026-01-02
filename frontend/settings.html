@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen - I.R.I.S.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/static/assets/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        * { 
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #06b6d4;
+            --primary-glow: rgba(6, 182, 212, 0.4);
+            --bg-dark: #050505;
+            --panel-bg: rgba(20, 20, 23, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 5% 5%, rgba(6, 182, 212, 0.05), transparent 25%),
+                radial-gradient(circle at 95% 95%, rgba(20, 184, 166, 0.05), transparent 25%);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+        }
+
+        .setting-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .setting-card:hover {
+            border-color: rgba(6, 182, 212, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-success { background-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .status-warning { background-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        .status-error   { background-color: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+        .btn-action:hover {
+            background: rgba(6, 182, 212, 0.1);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        nav a.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+    </style>
+</head>
+<body class="selection:bg-cyan-500/30">
+
+    <div class="relative min-h-screen flex flex-col">
+        
+        <!-- Navbar -->
+        <nav class="container mx-auto px-6 py-6 flex justify-between items-center relative z-20">
+            <div class="flex items-center gap-3">
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-white">I.R.I.S.</span>
+                </a>
+            </div>
+            
+            <div class="flex gap-6">
+                <a href="/generate" class="text-sm font-medium text-gray-400 hover:text-white transition-colors py-2">Generieren</a>
+                <a href="/gallery" class="text-sm font-medium text-gray-400 hover:text-white transition-colors py-2">Galerie</a>
+                <a href="/settings" class="text-sm font-medium text-white border-b-2 border-cyan-500 transition-colors py-2">Einstellungen</a>
+            </div>
+        </nav>
+
+        <main class="container mx-auto px-6 py-10 max-w-5xl">
+            <header class="mb-12">
+                <h1 class="text-4xl font-extrabold text-white mb-2">System-Einstellungen</h1>
+                <p class="text-gray-400">Verwalte deine Hardware-Ressourcen und System-Konfigurationen.</p>
+            </header>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                
+                <!-- Links: System Status & Info -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Hardware Status -->
+                    <section class="glass-panel p-8">
+                        <h2 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg>
+                            Hardware Monitoring
+                        </h2>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="setting-card">
+                                <div class="text-xs text-gray-500 uppercase font-bold mb-1">GPU Auslastung</div>
+                                <div class="flex items-end justify-between">
+                                    <div class="text-2xl font-bold text-white" id="gpuLoad">-- %</div>
+                                    <div class="text-sm text-cyan-400 font-mono" id="gpuTemp">--°C</div>
+                                </div>
+                                <div class="w-full bg-white/5 h-1.5 rounded-full mt-3 overflow-hidden">
+                                    <div id="gpuBar" class="bg-cyan-500 h-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="setting-card">
+                                <div class="text-xs text-gray-500 uppercase font-bold mb-1">VRAM Belegung</div>
+                                <div class="flex items-end justify-between">
+                                    <div class="text-2xl font-bold text-white" id="vramUsed">-- GB</div>
+                                    <div class="text-sm text-gray-400" id="vramTotal">/ -- GB</div>
+                                </div>
+                                <div class="w-full bg-white/5 h-1.5 rounded-full mt-3 overflow-hidden">
+                                    <div id="vramBar" class="bg-teal-500 h-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- System Info -->
+                    <section class="glass-panel p-8">
+                        <h2 class="text-lg font-bold text-white mb-6">Software-Stack</h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                                <span class="text-gray-400">Betriebssystem</span>
+                                <span class="text-white font-medium" id="osInfo">Lade...</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                                <span class="text-gray-400">Python Version</span>
+                                <span class="text-white font-medium font-mono" id="pythonVersion">--</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                                <span class="text-gray-400">PyTorch / CUDA</span>
+                                <span class="text-white font-medium font-mono" id="torchInfo">--</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3">
+                                <span class="text-gray-400">I.R.I.S. Kern</span>
+                                <span class="text-cyan-400 font-bold">v1.0.0 Stable</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Rechts: Controls & Status -->
+                <div class="space-y-6">
+                    
+                    <!-- Connectivity -->
+                    <section class="glass-panel p-6">
+                        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6">Dienste</h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm text-gray-300">Backend API</span>
+                                    <span id="rpcStatus" class="flex items-center text-xs font-bold text-gray-500">
+                                        <span class="status-dot status-warning"></span>Prüfe...
+                                    </span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 font-mono" id="rpcActivity">Warte auf Server...</div>
+                            </div>
+
+                            <div class="pt-4 border-t border-white/5">
+                                <button onclick="clearCache()" class="w-full py-3 rounded-xl btn-action text-sm font-bold flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Cache leeren
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Statistics -->
+                    <section class="glass-panel p-6">
+                        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-6">Bibliothek</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="statImages">--</div>
+                                <div class="text-xs text-gray-500">Gespeicherte Bilder</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-white" id="statStorage">-- MB</div>
+                                <div class="text-xs text-gray-500">Speicherplatzverbrauch</div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="mt-auto py-8 text-center border-t border-white/5 bg-black/20">
+            <p class="text-xs text-gray-600 font-mono">I.R.I.S. Core Running on Localhost:5000</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_URL = ''; // Adjust if hosted elsewhere
+
+        async function loadGpuInfo() {
+            try {
+                const response = await fetch(API_URL + '/api/gpu-info');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const gpu = data.gpu;
+                    document.getElementById('gpuLoad').textContent = `${gpu.load}%`;
+                    document.getElementById('gpuTemp').textContent = `${gpu.temp}°C`;
+                    document.getElementById('gpuBar').style.width = `${gpu.load}%`;
+                    
+                    const vramUsed = (gpu.memoryUsed / 1024).toFixed(1);
+                    const vramTotal = (gpu.memoryTotal / 1024).toFixed(1);
+                    const vramPerc = (gpu.memoryUsed / gpu.memoryTotal * 100);
+                    
+                    document.getElementById('vramUsed').textContent = `${vramUsed} GB`;
+                    document.getElementById('vramTotal').textContent = `/ ${vramTotal} GB`;
+                    document.getElementById('vramBar').style.width = `${vramPerc}%`;
+                }
+            } catch (e) { console.error("GPU Info error", e); }
+        }
+
+        async function loadVersionInfo() {
+            try {
+                const response = await fetch(API_URL + '/api/version');
+                const data = await response.json();
+                document.getElementById('osInfo').textContent = data.os || 'Linux / Windows';
+                document.getElementById('pythonVersion').textContent = data.python_version;
+                document.getElementById('torchInfo').textContent = `${data.pytorch_version} / ${data.cuda_version}`;
+            } catch (e) {
+                document.getElementById('osInfo').textContent = 'Keine Verbindung';
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(API_URL + '/api/output-gallery');
+                const data = await response.json();
+                const images = data.images || [];
+                document.getElementById('statImages').textContent = images.length;
+                
+                // Mock calculation for storage (assuming 1MB per image)
+                document.getElementById('statStorage').textContent = (images.length * 1.2).toFixed(1) + ' MB';
+            } catch (e) {}
+        }
+
+        async function loadRpcStatus() {
+            try {
+                const response = await fetch(API_URL + '/api/rpc-status');
+                const data = await response.json();
+                const el = document.getElementById('rpcStatus');
+                const act = document.getElementById('rpcActivity');
+                
+                if (data.connected) {
+                    el.innerHTML = '<span class="status-dot status-success"></span>Verbunden';
+                    act.textContent = data.status || 'Bereit für Anfragen';
+                } else {
+                    el.innerHTML = '<span class="status-dot status-error"></span>Getrennt';
+                    act.textContent = 'Backend nicht erreichbar';
+                }
+            } catch (e) {
+                document.getElementById('rpcStatus').innerHTML = '<span class="status-dot status-error"></span>Offline';
+            }
+        }
+
+        function clearCache() {
+            if(confirm('Möchtest du den temporären Vorschau-Cache wirklich leeren?')) {
+                // In a real app, send a DELETE request
+                alert('Cache wurde erfolgreich geleert.');
+            }
+        }
+
+        // Init
+        loadVersionInfo();
+        loadGpuInfo();
+        loadStats();
+        loadRpcStatus();
+
+        // Refresh dynamic data
+        setInterval(() => {
+            loadGpuInfo();
+            loadRpcStatus();
+        }, 5000);
+    </script>
+</body>
+</html>

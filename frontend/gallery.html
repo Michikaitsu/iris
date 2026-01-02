@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I.R.I.S. Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/static/assets/favicon.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        
+        * { 
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #06b6d4;
+            --primary-glow: rgba(6, 182, 212, 0.4);
+            --bg-dark: #050505;
+            --panel-bg: rgba(20, 20, 23, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(20, 184, 166, 0.05), transparent 25%);
+            color: #e5e7eb;
+            min-height: 100vh;
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Components */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        .input-field {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e5e5e5;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        /* Filter Tabs */
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #9ca3af;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .filter-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .filter-btn.active {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        /* Grid Items */
+        .image-card {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: #000;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .image-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.3);
+            z-index: 10;
+        }
+        
+        .image-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .image-card:hover .image-overlay { opacity: 1; }
+
+        /* Modal */
+        .modal {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        
+        /* Stats Cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-[1600px] mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="glass-panel p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <a href="/generate" class="group flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-teal-400">I.R.I.S.</h1>
+                        <p class="text-[10px] text-gray-500 tracking-wider font-medium">MEDIA LIBRARY</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="flex gap-2">
+                <a href="/generate" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold shadow-lg shadow-cyan-500/20">Generator</a>
+                <a href="/settings" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium">Settings</a>
+            </div>
+        </header>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stat-card glass-panel p-4 rounded-xl flex flex-col items-center justify-center">
+                <div class="text-3xl font-bold text-white mb-1" id="totalImages">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Total Images</div>
+            </div>
+            <div class="stat-card glass-panel p-4 rounded-xl flex flex-col items-center justify-center">
+                <div class="text-3xl font-bold text-cyan-400 mb-1" id="generatedCount">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Generated</div>
+            </div>
+            <div class="stat-card glass-panel p-4 rounded-xl flex flex-col items-center justify-center">
+                <div class="text-3xl font-bold text-teal-400 mb-1" id="upscaledCount">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Upscaled</div>
+            </div>
+            <div class="stat-card glass-panel p-4 rounded-xl flex flex-col items-center justify-center">
+                <div class="text-3xl font-bold text-purple-400 mb-1" id="variationCount">0</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Variations</div>
+            </div>
+        </div>
+
+        <!-- Toolbar (Search & Filter) -->
+        <div class="glass-panel p-4 flex flex-col md:flex-row gap-4 justify-between items-center sticky top-4 z-20 shadow-2xl shadow-black/50">
+            <!-- Search -->
+            <div class="relative w-full md:w-96">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" id="searchInput" class="input-field w-full rounded-lg pl-10 pr-4 py-2 text-sm" placeholder="Search filenames, seeds...">
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap justify-center gap-1 bg-black/20 p-1 rounded-lg">
+                <button class="filter-btn active" onclick="filterByType('all')">All</button>
+                <button class="filter-btn" onclick="filterByType('generated')">Generated</button>
+                <button class="filter-btn" onclick="filterByType('upscaled')">Upscaled</button>
+                <button class="filter-btn" onclick="filterByType('variation')">Variations</button>
+            </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 pb-12">
+            <!-- Loading State -->
+            <div class="col-span-full flex flex-col items-center justify-center py-20 text-gray-500">
+                <div class="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
+                <p>Loading your library...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Image Modal -->
+    <div id="modal" class="modal fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="relative max-w-7xl w-full h-[90vh] flex flex-col md:flex-row gap-4">
+            
+            <!-- Close Button -->
+            <button onclick="closeModal()" class="absolute -top-12 right-0 text-white/50 hover:text-white transition">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Image Area -->
+            <div class="flex-1 bg-black/50 rounded-2xl flex items-center justify-center p-4 border border-white/10 relative group">
+                <img id="modalImage" class="max-w-full max-h-full object-contain shadow-2xl rounded-lg" />
+            </div>
+
+            <!-- Sidebar Info -->
+            <div class="w-full md:w-80 glass-panel p-6 flex flex-col shrink-0 h-fit md:h-full overflow-y-auto">
+                <h3 class="text-lg font-bold text-white mb-6 border-b border-white/10 pb-4">Image Details</h3>
+                
+                <div class="space-y-4 flex-1" id="modalInfo">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-white/10 flex flex-col gap-3">
+                    <button onclick="downloadImage()" class="btn-primary w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download
+                    </button>
+                    <button onclick="closeModal()" class="btn-secondary w-full py-3 rounded-xl font-medium">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Updated API Config
+        const host = window.location.hostname;
+        const port = window.location.port || (window.location.protocol === 'https:' ? '443' : '80');
+        const API_URL = `http://${host}:${port}/api`;
+
+        let allImages = [];
+        let currentFilter = 'all';
+        let currentImage = null;
+
+        async function loadGallery() {
+            try {
+                const response = await fetch(API_URL + '/output-gallery');
+                const data = await response.json();
+                
+                allImages = data.images || [];
+                updateStats();
+                renderGallery();
+            } catch (error) {
+                console.error('Failed to load gallery:', error);
+                document.getElementById('galleryGrid').innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <div class="text-4xl mb-2 text-red-400">Error</div>
+                        <div class="text-gray-500">Could not connect to server</div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats() {
+            const total = allImages.length;
+            const generated = allImages.filter(f => getImageType(f) === 'generated').length;
+            const upscaled = allImages.filter(f => getImageType(f) === 'upscaled').length;
+            const variations = allImages.filter(f => getImageType(f) === 'variation').length;
+            
+            document.getElementById('totalImages').textContent = total;
+            document.getElementById('generatedCount').textContent = generated;
+            document.getElementById('upscaledCount').textContent = upscaled;
+            document.getElementById('variationCount').textContent = variations;
+        }
+
+        function getImageType(filename) {
+            if (filename.startsWith('gen_') || filename.startsWith('generated_')) return 'generated';
+            if (filename.startsWith('var_') || filename.startsWith('variation_')) return 'variation';
+            if (filename.startsWith('up') || filename.startsWith('upscaled')) return 'upscaled';
+            return 'unknown';
+        }
+
+        function filterByType(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderGallery();
+        }
+
+        function renderGallery() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = allImages.filter(img => {
+                const matchesFilter = currentFilter === 'all' || getImageType(img) === currentFilter;
+                const matchesSearch = img.toLowerCase().includes(searchTerm);
+                return matchesFilter && matchesSearch;
+            });
+
+            const galleryGrid = document.getElementById('galleryGrid');
+            
+            if (filtered.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="col-span-full text-center py-20">
+                        <div class="text-2xl mb-2 text-gray-500 font-bold">No Images Found</div>
+                        <div class="text-gray-600">Try adjusting your filters</div>
+                    </div>
+                `;
+                return;
+            }
+
+            galleryGrid.innerHTML = '';
+            filtered.forEach(filename => {
+                const card = document.createElement('div');
+                card.className = 'image-card group';
+                
+                const type = getImageType(filename);
+                // Badge color based on type
+                let badgeClass = 'bg-gray-500';
+                let typeLabel = 'UNK';
+                
+                if (type === 'generated') { badgeClass = 'bg-cyan-500'; typeLabel = 'GEN'; }
+                if (type === 'upscaled') { badgeClass = 'bg-teal-500'; typeLabel = 'UP'; }
+                if (type === 'variation') { badgeClass = 'bg-purple-500'; typeLabel = 'VAR'; }
+                
+                card.innerHTML = `
+                    <img src="${API_URL}/output-image/${filename}" 
+                         class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" 
+                         alt="${filename}" 
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/400?text=Error'">
+                    
+                    <div class="absolute top-2 right-2">
+                        <span class="text-[10px] font-bold text-white px-2 py-1 rounded shadow-md ${badgeClass}">${typeLabel}</span>
+                    </div>
+
+                    <div class="image-overlay absolute inset-0 flex flex-col justify-end p-4">
+                        <p class="text-white text-xs font-mono truncate mb-2 opacity-80">${filename}</p>
+                        <button onclick="openModal('${filename}')" class="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-lg backdrop-blur-sm border border-white/10 transition-colors">
+                            VIEW
+                        </button>
+                    </div>
+                `;
+                
+                galleryGrid.appendChild(card);
+            });
+        }
+
+        function openModal(filename) {
+            currentImage = { filename };
+            document.getElementById('modalImage').src = API_URL + `/output-image/${filename}`;
+            
+            const type = getImageType(filename);
+            const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+            
+            // Extract some fake details if we can't parse filename metadata yet
+            // Assuming filenames might be like: gen_123456_seed777.png
+            let seed = "Unknown";
+            const seedMatch = filename.match(/seed(\d+)/);
+            if(seedMatch) seed = seedMatch[1];
+
+            document.getElementById('modalInfo').innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                        <span class="text-gray-400 text-sm">Type</span>
+                        <span class="text-cyan-400 font-bold text-sm uppercase px-2 py-0.5 rounded bg-cyan-900/30 border border-cyan-500/30">${typeLabel}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                        <span class="text-gray-400 text-sm">Seed</span>
+                        <span class="text-gray-200 font-mono text-xs">${seed}</span>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-gray-400 text-sm">Filename</span>
+                        <span class="text-gray-500 font-mono text-[10px] break-all bg-black/30 p-2 rounded border border-white/5">${filename}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            currentImage = null;
+        }
+
+        function downloadImage() {
+            if (!currentImage) return;
+            const link = document.createElement('a');
+            link.href = API_URL + `/output-image/${currentImage.filename}`;
+            link.download = currentImage.filename;
+            link.click();
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', renderGallery);
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+        
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+        // Initialize
+        loadGallery();
+    </script>
+</body>
+</html>

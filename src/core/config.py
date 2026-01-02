@@ -6,7 +6,7 @@ from typing import Optional
 import os
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 # Load environment variables
 env_path = BASE_DIR / '.env'

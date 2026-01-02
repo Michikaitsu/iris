@@ -21,6 +21,9 @@ import signal
 import time
 from pathlib import Path
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
 current_processes = []
 shutdown_in_progress = False
 
@@ -93,17 +96,20 @@ def start_web_server():
     """Start FastAPI Web UI Server"""
     print("\n[WEB] Starting Web UI Server...")
     print("      Access at: http://localhost:8000\n")
-    
-    project_root = Path(__file__).parent.parent
+
+    # 🔒 WICHTIG: Projekt-Root korrekt setzen
+    project_root = Path(__file__).resolve().parents[1]
     os.chdir(project_root)
-    
+
     process = subprocess.Popen([
-        sys.executable, "-m", "uvicorn",
+        sys.executable,
+        "-m", "uvicorn",
         "src.api.server:app",
         "--host", "0.0.0.0",
         "--port", "8000",
-        "--reload"
+        # ❗ KEIN --reload
     ])
+
     current_processes.append(process)
     return process
 

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
+from pathlib import Path
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -14,7 +16,6 @@ from diffusers import (
 from PIL import Image
 import os
 import time
-from pathlib import Path
 import sys
 import random
 import numpy as np
@@ -28,11 +29,17 @@ import re
 import base64
 import subprocess
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(BASE_DIR))
+from src.core.config import Config
 from src.utils.logger import create_logger
 from src.utils.file_manager import FileManager
-from src.core.config import Config
+
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+ASSETS_DIR = BASE_DIR / "assets"
+
+print(">>> ASSETS DIR:", ASSETS_DIR)
+print(">>> ASSETS EXISTS:", ASSETS_DIR.exists())
 
 logger = create_logger("IRISWebServer")
 
@@ -137,26 +144,56 @@ async def load_models():
     logger.model_load_start("Ojimi/anime-kawai-diffusion")
     logger.info("This takes 5-10 minutes on first start (model will be downloaded)...")
     
+    # === UPDATED MODEL CONFIGS ===
     model_configs = {
-        "anime": {
+        "anime_kawai": {
             "id": "Ojimi/anime-kawai-diffusion",
-            "description": "Anime & Manga Style"
+            "description": "Anime & Kawai Style"
         },
-        "realistic": {
+        "stable_diffusion_2_1": {
             "id": "stabilityai/stable-diffusion-2-1",
             "description": "Realistic Photo Style"
         },
-        "abstract": {
-            "id": "prompthero/openjourney",
-            "description": "Artistic & Abstract Style"
+        "stable_diffusion_3_5": {
+            "id": "stabilityai/stable-diffusion-3.5-medium",
+            "description": "High-Quality Realistic Style"
         },
-        "pixel": {
+        "flux_1_fast": {
+            "id": "black-forest-labs/FLUX.1-schnell",
+            "description": "Fast & Efficient Style"
+        },
+        "openjourney": {
+            "id": "prompthero/openjourney",
+            "description": "Artistic Illustration Style"
+        },
+        "pixel_art": {
             "id": "nitrosocke/pixel-art-diffusion",
-            "description": "Pixel Art Style"
-        }
+            "description": "Pixel Art & Retro Style"
+        },
+        "pony_diffusion": {
+        "id": "AstraliteHeart/pony-diffusion-v6-xl",
+        "description": "High-End Anime & Character Style (SDXL)"
+        },
+        "anything_v5": {
+         "id": "stablediffusionapi/anything-v5",
+            "description": "Classic Flat Anime Style (Fast)"
+        },
+        "animagine_xl": {
+            "id": "CagliostroResearchGroup/animagine-xl-3.1",
+            "description": "High-Quality Modern Anime (SDXL)"
+        },
+        "aom3": {
+         "id": "WarriorMama777/AbyssOrangeMix3",
+         "description": "Semi-Realistic Anime Style"
+        },
+        "counterfeit_v3": {
+         "id": "stablediffusionapi/counterfeit-v30",
+         "description": "Detailed Digital Illustration Style"
+         }
     }
     
-    model_id = model_configs["anime"]["id"]
+    # Use the new key 'anime_kawai'
+    model_id = model_configs["anime_kawai"]["id"]
 
     pipe = StableDiffusionPipeline.from_pretrained(
         model_id,
@@ -306,6 +343,45 @@ def log_prompt(prompt: str, settings: dict):
     """Log prompt to JSON file"""
     FileManager.log_prompt(prompt, settings)
 
+def check_nsfw_prompt(prompt: str, nsfw_filter_enabled: bool = True) -> dict:
+    """
+    Check if prompt contains NSFW-related keywords/content
+    Returns: {"is_unsafe": bool, "reason": str, "message": str}
+    """
+    if not nsfw_filter_enabled:
+        return {"is_unsafe": False, "reason": "", "message": "Filter disabled"}
+    
+    # List of NSFW keywords/patterns to block
+    nsfw_keywords = [
+        # Explicit sexual content
+        "nude", "naked", "xxx", "porn", "sex", "sexual",
+        "penis", "vagina", "breast", "nipple", "testicle",
+        "intercourse", "blowjob", "cumshot", "ejaculation",
+        "horny", "erection", "orgasm", "masturbat",
+        
+        # Violence/Gore
+        "gore", "blood", "mutilat", "severed", "decapitat",
+        "dismember", "torture", "execut", "killing spree",
+        
+        # Drugs/Illegal content
+        "cocaine", "heroin", "meth", "drug deal", "illegal drug",
+        
+        # Hate/Discrimination
+        "racist", "sexist", "homophob", "hate crime",
+    ]
+    
+    prompt_lower = prompt.lower()
+    
+    for keyword in nsfw_keywords:
+        if keyword in prompt_lower:
+            return {
+                "is_unsafe": True,
+                "reason": keyword,
+                "message": f"❌ Prompt contains inappropriate content: '{keyword}'\n\nPlease modify your prompt to remove explicit or harmful descriptions."
+            }
+    
+    return {"is_unsafe": False, "reason": "", "message": "Prompt is safe"}
+
 def generate_filename(prefix: str, seed: int, steps: int = None, scale: int = None) -> str:
     """Generate filename with metadata"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -342,8 +418,30 @@ def log_prompt_history(filename: str, seed: int, prompt: str, steps: int):
     
     FileManager.log_prompt(prompt, log_data)
 
-# Initialize FastAPI with lifespan
+# ───────────────────────────────
+# INITIALIZE FASTAPI WITH LIFESPAN
+# ───────────────────────────────
 app = FastAPI(title="I.R.I.S. API", version="1.0.0", lifespan=lifespan)
+
+# ───────────────────────────────
+# MOUNT STATIC FILES
+# ───────────────────────────────
+app.mount(
+    "/assets",
+    StaticFiles(directory=str(ASSETS_DIR)),
+    name="assets"
+)
+
+print(">>> ROUTES AFTER MOUNT:")
+for r in app.routes:
+    print("   ", r)
+
+# ───────────────────────────────
+# TEST ROUTE
+# ───────────────────────────────
+@app.get("/__test_static")
+def test_static():
+    return {"ok": True}
 
 # CORS
 app.add_middleware(
@@ -358,44 +456,49 @@ app.add_middleware(
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 # app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
+FRONTEND_DIR = Config.BASE_DIR / "frontend"
+
 @app.get("/")
 async def root():
-    """Serve the main UI"""
-    return FileResponse(str(Path(__file__).parent.parent / "frontend" / "index.html"))
+    return FileResponse(FRONTEND_DIR / "index.html")
 
 @app.get("/generate")
 async def generate_page():
-    """Serve the image generation page"""
-    return FileResponse(str(Path(__file__).parent.parent / "frontend" / "generate.html"))
+    return FileResponse(FRONTEND_DIR / "generate.html")
 
 @app.get("/settings")
 async def settings_page():
-    """Serve settings page"""
-    return FileResponse(str(Path(__file__).parent.parent / "frontend" / "settings.html"))
+    return FileResponse(FRONTEND_DIR / "settings.html")
 
 @app.get("/gallery")
 async def gallery_page():
-    """Serve gallery page"""
-    return FileResponse(str(Path(__file__).parent.parent / "frontend" / "gallery.html"))
+    return FileResponse(FRONTEND_DIR / "gallery.html")
 
 @app.get("/favicon.ico")
 async def favicon():
-    """Serve favicon"""
-    favicon_path = Path(__file__).parent.parent.parent / "static" / "assets" / "favico.png"
-    if favicon_path.exists():
-        return FileResponse(str(favicon_path))
-    
-    fallback_path = Path(__file__).parent.parent / "frontend" / "assets" / "favicon.png"
-    if fallback_path.exists():
-        return FileResponse(str(fallback_path))
-    
-    raise HTTPException(status_code=404, detail="Favicon not found")
+    favicon = ASSETS_DIR / "favico.png"
+    if favicon.exists():
+        return FileResponse(favicon)
+    raise HTTPException(status_code=404)
+
+@app.get("/__debug_assets")
+def debug_assets():
+    base = ASSETS_DIR
+    thumbs = base / "thumbnails"
+    return {
+        "assets_exists": base.exists(),
+        "assets_path": str(base),
+        "thumbnails_exists": thumbs.exists(),
+        "thumbnails_files": (
+            [p.name for p in thumbs.iterdir()] if thumbs.exists() else []
+        )
+    }
 
 # ========== MODELS ==========
 class GenerationRequest(BaseModel):
     prompt: str
-    negative_prompt: Optional[str] = "lowres, bad anatomy, bad hands, worst quality, low quality, blurry, nsfw, nude"
-    style: str = "anime"
+    negative_prompt: Optional[str] = "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, out of focus, duplicate, ugly, morbid, mutilated, mutated hands, poorly drawn face, mutation, deformed, dehydrated, bad proportions, gross proportions, malformed limbs, long neck"
+    style: str = "anime_kawai"
     seed: Optional[int] = None
     steps: int = 35
     cfg_scale: float = 10.0
@@ -403,6 +506,7 @@ class GenerationRequest(BaseModel):
     height: int = 768
     batch_size: int = 1
     dram_extension_enabled: Optional[bool] = False
+    nsfw_filter_enabled: Optional[bool] = True
 
 class UpscaleRequest(BaseModel):
     filename: str
@@ -587,7 +691,7 @@ async def generate_image(request: GenerationRequest):
         generator = torch.Generator(device).manual_seed(seed)
         
         # Adjust prompt based on style
-        if request.style == "pixel":
+        if request.style == "pixel_art": # UPDATED KEY
             full_prompt = f"pixel art, 16-bit style, {request.prompt}"
             neg_prompt = f"smooth, anti-aliased, {request.negative_prompt}"
         else:
@@ -694,7 +798,7 @@ async def websocket_generate(websocket: WebSocket):
             
             logger.info("🎨 Starting generation...")
             logger.info(f"   Prompt: {request_data.get('prompt', 'N/A')[:60]}...")
-            logger.info(f"   Style: {request_data.get('style', 'anime')}")
+            logger.info(f"   Style: {request_data.get('style', 'anime_kawai')}") # Updated default
             logger.info(f"   Steps: {request_data.get('steps', 35)} (requested)")
             
             if device == "cuda":
@@ -745,10 +849,22 @@ async def websocket_generate(websocket: WebSocket):
             seed = request_data.get("seed") if request_data.get("seed") is not None else np.random.randint(0, 2147483647)
             generator = torch.Generator(device).manual_seed(seed)
             
-            style = request_data.get("style", "anime")
+            style = request_data.get("style", "anime_kawai") # Updated default
             prompt = request_data.get("prompt", "")
+            nsfw_filter_enabled = request_data.get("nsfw_filter_enabled", True)
             
-            if style == "pixel":
+            # Check if prompt contains NSFW content BEFORE generation
+            nsfw_check = check_nsfw_prompt(prompt, nsfw_filter_enabled)
+            if nsfw_check["is_unsafe"]:
+                logger.warning(f"NSFW prompt blocked: {nsfw_check['reason']}")
+                await safe_send({
+                    "type": "error",
+                    "message": nsfw_check["message"],
+                    "nsfw_blocked": True
+                })
+                break
+            
+            if style == "pixel_art": # UPDATED KEY
                 full_prompt = f"pixel art, 16-bit style, {prompt}"
                 neg_prompt = "smooth, anti-aliased, blurry, 3d render"
             else:
@@ -836,16 +952,37 @@ async def websocket_generate(websocket: WebSocket):
                 return callback_kwargs
 
             try:
-                result = pipe(
-                    prompt=full_prompt,
-                    negative_prompt=neg_prompt,
-                    num_inference_steps=total_steps,
-                    guidance_scale=request_data.get("cfg_scale", 10.0),
-                    width=request_data.get("width", 512),
-                    height=request_data.get("height", 768),
-                    generator=generator,
-                    callback_on_step_end=progress_callback
-                )
+                # Check if model is loaded
+                if pipe is None:
+                    error_msg = "Model not loaded yet. Please wait for the server to finish loading models on startup."
+                    logger.error(error_msg)
+                    await safe_send({
+                        "type": "error",
+                        "error_type": "model_not_loaded",
+                        "message": error_msg
+                    })
+                    break
+                
+                # Prepare kwargs for pipe call
+                pipe_kwargs = {
+                    "prompt": full_prompt,
+                    "negative_prompt": neg_prompt,
+                    "num_inference_steps": total_steps,
+                    "guidance_scale": request_data.get("cfg_scale", 10.0),
+                    "width": request_data.get("width", 512),
+                    "height": request_data.get("height", 768),
+                    "generator": generator
+                }
+                
+                # Only add callback if pipe supports it
+                try:
+                    if pipe is not None and (hasattr(pipe, 'callback_on_step_end') or 'callback_on_step_end' in pipe.__call__.__code__.co_varnames):
+                        pipe_kwargs["callback_on_step_end"] = progress_callback
+                except (AttributeError, TypeError):
+                    # Callback not supported, continue without it
+                    pass
+                
+                result = pipe(**pipe_kwargs)
             except RuntimeError as e:
                 if "out of memory" in str(e).lower():
                     vram_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3 if device == "cuda" else 0
@@ -896,6 +1033,7 @@ async def websocket_generate(websocket: WebSocket):
             logger.success(f"Generation completed in {generation_time:.1f}s")
             
             image = result.images[0]
+            
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
             img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -970,11 +1108,15 @@ async def websocket_generate(websocket: WebSocket):
                 logger.error(f"❌ Error: {error_message}")
             
             async def send_error_to_client():
-                await websocket.send_json({
-                    "type": "error",
-                    "error_type": error_type,
-                    "message": error_message
-                })
+                try:
+                    if websocket_active:
+                        await websocket.send_json({
+                            "type": "error",
+                            "error_type": error_type,
+                            "message": error_message
+                        })
+                except RuntimeError as e:
+                    logger.debug(f"Could not send error to client (WebSocket already closed): {e}")
             
             try:
                 asyncio.create_task(send_error_to_client())

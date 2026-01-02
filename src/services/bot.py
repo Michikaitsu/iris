@@ -296,61 +296,169 @@ async def iris_info(ctx):
 @bot.command(name='cleanup')
 async def cleanup_channels(ctx):
     """Remove all images from Discord channels that are not in img_send.json"""
+    # Permission check
     if str(ctx.author.id) != str(BOT_OWNER_ID):
-        await ctx.send("You don't have permission to use this command.")
+        await ctx.send("❌ Du hast keine Berechtigung für diesen Command.")
         return
     
-    await ctx.send("Starting channel cleanup... This may take a while.")
+    # Load sent images
+    load_sent_images()
+    valid_filenames = set(sent_images_dict.keys())
+    
+    if not valid_filenames:
+        await ctx.send("⚠️ Keine Bilder in img_send.json gefunden. Abbruch.")
+        return
+    
+    # Confirmation message
+    channels = [
+        (bot.get_channel(CHANNEL_NEW_IMAGES), "New Images"),
+        (bot.get_channel(CHANNEL_VARIATIONS), "Variations"),
+        (bot.get_channel(CHANNEL_UPSCALED), "Upscaled")
+    ]
+    
+    # Count messages to delete first
+    embed = discord.Embed(
+        title="🧹 Channel Cleanup",
+        description="Scanne Channels nach zu löschenden Nachrichten...",
+        color=0xfbbf24
+    )
+    status_msg = await ctx.send(embed=embed)
     
     try:
-        # Load sent images from JSON
-        load_sent_images()
-        valid_filenames = set(sent_images_dict.keys())
+        # Collect all message links from img_send.json
+        valid_message_links = set()
+        for filename, data in sent_images_dict.items():
+            if isinstance(data, dict) and "message_link" in data:
+                valid_message_links.add(data["message_link"])
         
-        channels = [
-            (bot.get_channel(CHANNEL_NEW_IMAGES), "New Images"),
-            (bot.get_channel(CHANNEL_VARIATIONS), "Variations"),
-            (bot.get_channel(CHANNEL_UPSCALED), "Upscaled")
-        ]
+        if not valid_message_links:
+            await ctx.send("⚠️ Keine Message-Links in img_send.json gefunden. Abbruch.")
+            return
         
-        total_deleted = 0
+        to_delete = []
         
         for channel, channel_name in channels:
             if not channel:
+                logger.warning(f"Channel {channel_name} nicht gefunden")
                 continue
-                
-            deleted_count = 0
-            async for message in channel.history(limit=None):
-                # Check if message has attachments
-                if not message.attachments:
-                    continue
-                
-                # Check if message is from this bot
-                if message.author.id != bot.user.id:
-                    continue
-                
-                # Get filename from attachment
-                for attachment in message.attachments:
-                    filename = attachment.filename
-                    
-                    # If filename not in img_send.json, delete the message
-                    if filename not in valid_filenames:
-                        try:
-                            await message.delete()
-                            deleted_count += 1
-                            total_deleted += 1
-                            logger.info(f"Deleted: {filename} from {channel_name}")
-                            await asyncio.sleep(1)  # Rate limiting
-                        except Exception as e:
-                            logger.error(f"Failed to delete {filename}: {e}")
             
-            logger.info(f"Cleaned {deleted_count} messages from {channel_name}")
+            # Check bot permissions
+            permissions = channel.permissions_for(channel.guild.me)
+            if not permissions.read_message_history or not permissions.manage_messages:
+                await ctx.send(f"❌ Fehlende Berechtigungen in {channel_name}")
+                continue
+            
+            async for message in channel.history(limit=None):
+                # Only check bot's own messages with attachments
+                if not message.attachments or message.author.id != bot.user.id:
+                    continue
+                
+                # Check if message link is in img_send.json
+                if message.jump_url not in valid_message_links:
+                    filename = message.attachments[0].filename if message.attachments else "unknown"
+                    to_delete.append((message, filename, channel_name))
         
-        await ctx.send(f"Cleanup complete! Deleted {total_deleted} messages total.")
+        if not to_delete:
+            embed = discord.Embed(
+                title="✅ Cleanup Abgeschlossen",
+                description="Keine zu löschenden Nachrichten gefunden.",
+                color=0x10b981
+            )
+            await status_msg.edit(embed=embed)
+            return
+        
+        # Confirmation
+        embed = discord.Embed(
+            title="⚠️ Bestätigung erforderlich",
+            description=f"**{len(to_delete)} Nachrichten** werden gelöscht.\n\nReagiere mit ✅ zum Bestätigen oder ❌ zum Abbrechen.",
+            color=0xef4444
+        )
+        await status_msg.edit(embed=embed)
+        await status_msg.add_reaction('✅')
+        await status_msg.add_reaction('❌')
+        
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in ['✅', '❌'] and reaction.message.id == status_msg.id
+        
+        try:
+            reaction, user = await bot.wait_for('reaction_add', timeout=30.0, check=check)
+            
+            if str(reaction.emoji) == '❌':
+                embed = discord.Embed(
+                    title="❌ Cleanup Abgebrochen",
+                    description="Keine Nachrichten wurden gelöscht.",
+                    color=0x6b7280
+                )
+                await status_msg.edit(embed=embed)
+                await status_msg.clear_reactions()
+                return
+        
+        except asyncio.TimeoutError:
+            embed = discord.Embed(
+                title="⏱️ Timeout",
+                description="Keine Reaktion erhalten. Cleanup abgebrochen.",
+                color=0x6b7280
+            )
+            await status_msg.edit(embed=embed)
+            await status_msg.clear_reactions()
+            return
+        
+        # Delete messages
+        await status_msg.clear_reactions()
+        total_deleted = 0
+        failed = 0
+        
+        for i, (message, filename, channel_name) in enumerate(to_delete, 1):
+            try:
+                # Update status every 5 messages
+                if i % 5 == 0 or i == len(to_delete):
+                    embed = discord.Embed(
+                        title="🧹 Cleanup läuft...",
+                        description=f"Fortschritt: {i}/{len(to_delete)} ({int(i/len(to_delete)*100)}%)\n"
+                                  f"✅ Gelöscht: {total_deleted}\n"
+                                  f"❌ Fehler: {failed}",
+                        color=0x3b82f6
+                    )
+                    await status_msg.edit(embed=embed)
+                
+                await message.delete()
+                total_deleted += 1
+                logger.info(f"Gelöscht: {filename} aus {channel_name}")
+                
+                # Rate limiting: 1 deletion per second
+                await asyncio.sleep(1.0)
+                
+            except discord.errors.NotFound:
+                logger.warning(f"Nachricht bereits gelöscht: {filename}")
+                failed += 1
+            except discord.errors.Forbidden:
+                logger.error(f"Keine Berechtigung zum Löschen: {filename}")
+                failed += 1
+            except Exception as e:
+                logger.error(f"Fehler beim Löschen {filename}: {e}")
+                failed += 1
+        
+        # Final report
+        embed = discord.Embed(
+            title="✅ Cleanup Abgeschlossen",
+            description=f"**Ergebnis:**\n"
+                       f"✅ Erfolgreich gelöscht: {total_deleted}\n"
+                       f"❌ Fehlgeschlagen: {failed}\n"
+                       f"📊 Gesamt verarbeitet: {len(to_delete)}",
+            color=0x10b981
+        )
+        await status_msg.edit(embed=embed)
+        
+        logger.success(f"Cleanup abgeschlossen: {total_deleted} gelöscht, {failed} Fehler")
         
     except Exception as e:
-        logger.error(f"Cleanup error: {e}")
-        await ctx.send(f"Cleanup failed: {e}")
+        logger.error(f"Cleanup Fehler: {e}")
+        embed = discord.Embed(
+            title="❌ Cleanup Fehler",
+            description=f"Ein Fehler ist aufgetreten: {str(e)}",
+            color=0xef4444
+        )
+        await status_msg.edit(embed=embed)
 
 @bot.command(name='help')
 async def help_command(ctx):
