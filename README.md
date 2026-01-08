@@ -200,7 +200,7 @@ You are explicitly encouraged to:
 * Run on NVIDIA, AMD, or Intel GPUs (experimental)
 * Fork this into a commercial or closed product
 
-**I.R.I.S. Engine does not enforce a business model.**
+**I.R.I.S. does not enforce a business model.**
 
 ---
 
