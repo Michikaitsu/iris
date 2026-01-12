@@ -39,7 +39,7 @@ Before opening a new issue:
 - Provide clear reproduction steps
 
 **Bug Report Template**
-```markdown
+\`\`\`markdown
 **Description**
 Clear and concise description of the issue.
 
@@ -57,13 +57,13 @@ What should happen instead?
 - VRAM:
 - Python:
 - CUDA / ROCm:
-````
+\`\`\``
 
 ---
 
 ### ✨ Feature Requests
 
-```markdown
+\`\`\`markdown
 **Problem**
 What limitation does this solve?
 
@@ -75,7 +75,7 @@ Any other approaches considered?
 
 **Why for I.R.I.S.?**
 How does this fit the project's philosophy?
-```
+\`\`\`
 
 ---
 
@@ -99,21 +99,21 @@ Large features should be discussed via Issues first.
 
 ### 1. Fork & Clone
 
-```bash
+\`\`\`bash
 git clone https://github.com/YOUR_USERNAME/IRIS.git
 cd IRIS
 git remote add upstream https://github.com/ORIGINAL_OWNER/IRIS.git
-```
+\`\`\`
 
 ---
 
 ### 2. Create a Branch
 
-```bash
+\`\`\`bash
 git checkout -b feature/my-feature
 # or
 git checkout -b fix/my-bug
-```
+\`\`\`
 
 **Branch naming**
 
@@ -127,7 +127,7 @@ git checkout -b fix/my-bug
 
 ### 3. Python Environment
 
-```bash
+\`\`\`bash
 python -m venv venv
 # Windows
 venv\Scripts\activate
@@ -135,7 +135,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
-```
+\`\`\`
 
 ---
 
@@ -143,7 +143,7 @@ pip install -r requirements.txt
 
 Create a `.env` file:
 
-```env
+\`\`\`env
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8000
 
@@ -154,22 +154,23 @@ DISCORD_BOT_ID=bot_id
 DISCORD_CHANNEL_NEW_IMAGES=channel_id
 DISCORD_CHANNEL_VARIATIONS=channel_id
 DISCORD_CHANNEL_UPSCALED=channel_id
-```
+\`\`\`
 
 ---
 
 ### 5. Running the Project
 
-```bash
-# Web UI only
-python src/start.py web
+\`\`\`bash
+# Auto-start based on settings.json
+python src/start.py
 
-# Discord bot only
-python src/start.py bot
+# Force start without Discord bot
+python src/start.py --no-bot
+\`\`\`
 
-# Everything
-python src/start.py all
-```
+The startup behavior is controlled by `settings.json`:
+- `discordEnabled: true` → Web UI + Discord Bot
+- `discordEnabled: false` → Web UI only
 
 ---
 
@@ -177,12 +178,12 @@ python src/start.py all
 
 ### Commit Style
 
-```text
+\`\`\`text
 type: short description
 
 Optional longer explanation
 Fixes #issue_number
-```
+\`\`\`
 
 **Types**
 
@@ -216,17 +217,17 @@ Fixes #issue_number
 
 **Good Example**
 
-```python
+\`\`\`python
 def generate_image(prompt: str, steps: int) -> bool:
     """Generate an image from a text prompt."""
     return True
-```
+\`\`\`
 
 ---
 
 ## Project Structure
 
-```text
+\`\`\`text
 src/
 ├── api/            # FastAPI backend
 ├── core/           # Generation logic
@@ -242,17 +243,17 @@ static/
 outputs/
 logs/
 tests/
-```
+\`\`\`
 
 ---
 
 ## Testing Guidelines
 
-```bash
+\`\`\`bash
 pytest
 pytest -v
 pytest --cov=src
-```
+\`\`\`
 
 Tests are encouraged but not mandatory for small fixes.
 

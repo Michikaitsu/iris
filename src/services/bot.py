@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 import sys
 import json
-import threading
 from dotenv import load_dotenv
 
 # Calculate path to .env file
@@ -28,14 +27,6 @@ logger = create_logger("IRISDiscordBot")
 SENT_IMAGES_FILE = BASE_DIR / "static" / "data" / "img_send.json"
 PROMPTS_LOG_FILE = BASE_DIR / "static" / "data" / "prompts_history.json"
 OUTPUTS_DIR = BASE_DIR / "outputs"
-
-# Discord Rich Presence Setup
-try:
-    from pypresence import Presence
-    DISCORD_RPC_AVAILABLE = True
-except ImportError:
-    DISCORD_RPC_AVAILABLE = False
-    print("[INFO] pypresence not installed. Discord RPC disabled.")
 
 # Configuration functions
 def read_config_file(filename):
@@ -73,83 +64,6 @@ BOT_ID = os.getenv('DISCORD_BOT_ID') or read_config_file("bot_id.txt")
 CHANNEL_NEW_IMAGES = get_env_id('DISCORD_CHANNEL_NEW_IMAGES')
 CHANNEL_VARIATIONS = get_env_id('DISCORD_CHANNEL_VARIATIONS')
 CHANNEL_UPSCALED = get_env_id('DISCORD_CHANNEL_UPSCALED')
-
-# Discord RPC ID
-DISCORD_RPC_CLIENT_ID = read_config_file("rpc_client_id.txt") or "YOUR_DISCORD_APPLICATION_ID"
-
-rpc = None
-rpc_connected = False
-generation_count = 0
-current_status = "idle"
-
-def init_discord_rpc():
-    """Initialize Discord Rich Presence"""
-    global rpc, rpc_connected
-    if not DISCORD_RPC_AVAILABLE or DISCORD_RPC_CLIENT_ID == "YOUR_DISCORD_APPLICATION_ID":
-        return False
-    
-    try:
-        rpc = Presence(DISCORD_RPC_CLIENT_ID)
-        rpc.connect()
-        rpc_connected = True
-        logger.success("Discord Rich Presence connected!")
-        update_rpc_status("idle")
-        return True
-    except Exception as e:
-        logger.warning(f"Discord RPC connection failed: {e}")
-        rpc_connected = False
-        return False
-
-def update_rpc_status(status: str, details: str = None, progress: int = None):
-    """Update status in Discord Rich Presence"""
-    global rpc, rpc_connected, current_status
-    if not rpc_connected or rpc is None:
-        return
-
-    current_status = status
-    try:
-        state_text = f"{generation_count} Images generated"
-        if status == "idle":
-            details_text = "Ready to create"
-            small_image, small_text = "idle", "Ready"
-        elif status == "generating":
-            details_text = details or "Generating image..."
-            if progress is not None: details_text = f"Generating... {progress}%"
-            small_image, small_text = "generating", "Generating"
-        elif status == "upscaling":
-            details_text = details or "Upscaling..."
-            small_image, small_text = "upscaling", "Upscaling"
-        else:
-            details_text = "Working..."
-            small_image, small_text = "idle", status.capitalize()
-
-        rpc.update(
-            details=details_text,
-            state=state_text,
-            large_image="iris_logo",
-            large_text="I.R.I.S. - Intelligent Rendering & Image Synthesis",
-            small_image=small_image,
-            small_text=small_text,
-            start=int(datetime.now().timestamp())
-        )
-    except Exception as e:
-        logger.warning(f"RPC Update failed: {e}")
-        rpc_connected = False
-
-def increment_generation_count():
-    global generation_count
-    generation_count += 1
-    if rpc_connected:
-        update_rpc_status(current_status)
-
-def disconnect_rpc():
-    global rpc, rpc_connected
-    if rpc and rpc_connected:
-        try:
-            rpc.close()
-            logger.info("Discord RPC disconnected")
-        except: pass
-    rpc_connected = False
 
 # Image Tracking Functions
 sent_images_dict = {}
@@ -210,7 +124,6 @@ async def on_ready():
             all_found = False
 
     if all_found:
-        init_discord_rpc()
         load_sent_images()
         if not monitor_images.is_running():
             monitor_images.start()
@@ -277,7 +190,6 @@ async def monitor_images():
                         
                         save_sent_image(filename, msg.jump_url)
                         logger.success(f"Image sent: {filename}")
-                        if not is_up: increment_generation_count()
 
                 except Exception as e:
                     logger.error(f"Error sending {filename}: {e}")
@@ -477,7 +389,6 @@ def main():
         
         def shutdown_handler(signum, frame):
             logger.info("Received shutdown signal, closing bot...")
-            disconnect_rpc()
             bot.loop.stop()
             sys.exit(0)
         
@@ -490,7 +401,7 @@ def main():
     except Exception as e:
         logger.error(f"Bot crashed: {e}")
     finally:
-        disconnect_rpc()
+        pass
 
 if __name__ == "__main__":
     main()

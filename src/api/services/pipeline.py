@@ -1,0 +1,369 @@
+"""
+Pipeline Service - Model Loading & Generation Logic
+"""
+import torch
+import os
+import gc
+from diffusers import (
+    StableDiffusionPipeline,
+    StableDiffusionImg2ImgPipeline,
+    EulerAncestralDiscreteScheduler
+)
+from src.utils.logger import create_logger
+
+logger = create_logger("PipelineService")
+
+# Model configurations
+MODEL_CONFIGS = {
+    "anime_kawai": {
+        "id": "Ojimi/anime-kawai-diffusion",
+        "description": "Anime & Kawai Style"
+    },
+    "stable_diffusion_2_1": {
+        "id": "stabilityai/stable-diffusion-2-1",
+        "description": "Realistic Photo Style"
+    },
+    "stable_diffusion_3_5": {
+        "id": "stabilityai/stable-diffusion-3.5-medium",
+        "description": "High-Quality Realistic Style"
+    },
+    "flux_1_fast": {
+        "id": "black-forest-labs/FLUX.1-schnell",
+        "description": "Fast & Efficient Style"
+    },
+    "openjourney": {
+        "id": "prompthero/openjourney",
+        "description": "Artistic Illustration Style"
+    },
+    "pixel_art": {
+        "id": "nitrosocke/pixel-art-diffusion",
+        "description": "Pixel Art & Retro Style"
+    },
+    "pony_diffusion": {
+        "id": "AstraliteHeart/pony-diffusion-v6-xl",
+        "description": "High-End Anime & Character Style (SDXL)"
+    },
+    "anything_v5": {
+        "id": "stablediffusionapi/anything-v5",
+        "description": "Classic Flat Anime Style (Fast)"
+    },
+    "animagine_xl": {
+        "id": "CagliostroResearchGroup/animagine-xl-3.1",
+        "description": "High-Quality Modern Anime (SDXL)"
+    },
+    "aom3": {
+        "id": "WarriorMama777/AbyssOrangeMix3",
+        "description": "Semi-Realistic Anime Style"
+    },
+    "counterfeit_v3": {
+        "id": "stablediffusionapi/counterfeit-v30",
+        "description": "Detailed Digital Illustration Style"
+    }
+}
+
+
+class PipelineService:
+    """Manages AI model pipelines"""
+    
+    def __init__(self):
+        self.pipe = None
+        self.img2img_pipe = None
+        self.device = None
+        self.dtype = torch.float32
+        self.current_model = None
+        self.upscaler = None
+        
+        # DRAM Extension Configuration
+        self.dram_config = {
+            "enabled": False,
+            "vram_threshold_gb": 6,
+            "max_dram_gb": 16
+        }
+    
+    def detect_device(self):
+        """Detect and configure the best available device"""
+        if torch.cuda.is_available():
+            self.device = "cuda"
+            gpu_name = torch.cuda.get_device_name(0)
+            logger.success(f"NVIDIA GPU detected: {gpu_name}")
+            
+            vram_total_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
+            logger.info(f"VRAM: {vram_total_gb:.1f}GB")
+            
+            os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+            
+            if vram_total_gb <= self.dram_config["vram_threshold_gb"]:
+                logger.info(f"Auto-enabling DRAM Extension for {vram_total_gb:.1f}GB VRAM card")
+                self.dram_config["enabled"] = True
+            
+            has_tensor_cores = any(arch in gpu_name.upper() for arch in ["RTX", "A100", "V100", "T4", "A10", "A40"])
+            if has_tensor_cores:
+                logger.success("Tensor Cores detected! Using float16")
+                self.dtype = torch.float16
+            else:
+                logger.warning("No Tensor Cores detected. Using float32")
+                self.dtype = torch.float32
+                
+        elif torch.backends.mps.is_available():
+            self.device = "mps"
+            self.dtype = torch.float32
+            logger.success("Apple Silicon detected")
+            
+        elif hasattr(torch, 'xpu') and torch.xpu.is_available():
+            self.device = "xpu"
+            self.dtype = torch.float32
+            logger.success("Intel Arc GPU detected")
+            
+        else:
+            self.device = "cpu"
+            self.dtype = torch.float32
+            logger.info("Running in CPU mode")
+        
+        return self.device
+    
+    async def load_model(self, model_name: str = "anime_kawai"):
+        """Load a specific model"""
+        if model_name not in MODEL_CONFIGS:
+            raise ValueError(f"Unknown model: {model_name}")
+        
+        model_id = MODEL_CONFIGS[model_name]["id"]
+        logger.info(f"Loading model: {model_id}")
+        
+        try:
+            self.pipe = StableDiffusionPipeline.from_pretrained(
+                model_id,
+                torch_dtype=self.dtype,
+                safety_checker=None,
+                requires_safety_checker=False
+            )
+            
+            self.pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(
+                self.pipe.scheduler.config
+            )
+            self.pipe = self.pipe.to(self.device)
+            
+            # Apply optimizations
+            if self.device == "cuda":
+                self._apply_cuda_optimizations(self.pipe)
+            
+            # Create img2img pipeline
+            self.img2img_pipe = StableDiffusionImg2ImgPipeline(
+                vae=self.pipe.vae,
+                text_encoder=self.pipe.text_encoder,
+                tokenizer=self.pipe.tokenizer,
+                unet=self.pipe.unet,
+                scheduler=self.pipe.scheduler,
+                safety_checker=None,
+                feature_extractor=None,
+                requires_safety_checker=False
+            )
+            
+            if not self.dram_config["enabled"]:
+                self.img2img_pipe = self.img2img_pipe.to(self.device)
+            
+            if self.device == "cuda":
+                self._apply_cuda_optimizations(self.img2img_pipe)
+            
+            self.current_model = model_name
+            logger.success(f"Model loaded: {model_name}")
+            
+        except Exception as e:
+            logger.error(f"Failed to load model: {e}")
+            raise
+    
+    def _apply_cuda_optimizations(self, pipeline):
+        """Apply CUDA-specific optimizations"""
+        pipeline.enable_attention_slicing(slice_size=1)
+        
+        # Use new VAE methods to avoid deprecation warnings
+        if hasattr(pipeline, 'vae') and pipeline.vae is not None:
+            if hasattr(pipeline.vae, 'enable_slicing'):
+                pipeline.vae.enable_slicing()
+            if hasattr(pipeline.vae, 'enable_tiling'):
+                pipeline.vae.enable_tiling()
+        
+        if self.dram_config["enabled"]:
+            self._apply_dram_extension(pipeline)
+        
+        if self.dtype == torch.float16 and hasattr(pipeline, 'vae'):
+            pipeline.vae.to(torch.float32)
+        
+        torch.cuda.empty_cache()
+    
+    def _apply_dram_extension(self, pipeline):
+        """Enable DRAM as VRAM extension"""
+        if self.device != "cuda":
+            return
+        
+        try:
+            if hasattr(pipeline, 'enable_sequential_cpu_offload'):
+                pipeline.enable_sequential_cpu_offload()
+                logger.success("Sequential CPU offload enabled")
+            elif hasattr(pipeline, 'enable_model_cpu_offload'):
+                pipeline.enable_model_cpu_offload()
+                logger.success("Model CPU offload enabled")
+            
+            torch.cuda.set_per_process_memory_fraction(0.95)
+            torch.backends.cudnn.benchmark = True
+            torch.backends.cuda.matmul.allow_tf32 = True
+            
+        except Exception as e:
+            logger.error(f"Failed to enable DRAM extension: {e}")
+    
+    def get_safe_params(self, width: int, height: int, steps: int) -> tuple:
+        """Auto-adjust parameters based on VRAM"""
+        if self.dram_config["enabled"]:
+            return width, height, steps
+        
+        if self.device != "cuda":
+            return width, height, steps
+        
+        vram_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        total_pixels = width * height
+        
+        if vram_gb <= 4:
+            if total_pixels > 512 * 512:
+                width, height = 512, 512
+                logger.warning(f"Auto-adjusted to {width}x{height} for 4GB VRAM")
+            if steps > 25:
+                steps = 25
+                
+        elif vram_gb <= 6:
+            if total_pixels > 720 * 1280:
+                width, height = 720, 1280
+                logger.warning(f"Auto-adjusted to {width}x{height} for 6GB VRAM")
+            if steps > 35:
+                steps = 35
+        
+        return width, height, steps
+    
+    def check_vram_availability(self, width: int, height: int, steps: int) -> dict:
+        """
+        Check if there's enough VRAM for the requested generation.
+        Returns dict with can_generate, estimated_vram_gb, available_vram_gb, and adjusted_params if needed.
+        """
+        result = {
+            "can_generate": True,
+            "estimated_vram_gb": 0,
+            "available_vram_gb": 0,
+            "adjusted_params": None,
+            "dram_enabled": self.dram_config["enabled"]
+        }
+        
+        if self.device != "cuda":
+            return result
+        
+        try:
+            # Get current VRAM status
+            total_vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            allocated_vram = torch.cuda.memory_allocated(0) / (1024**3)
+            cached_vram = torch.cuda.memory_reserved(0) / (1024**3)
+            available_vram = total_vram - allocated_vram
+            
+            result["total_vram_gb"] = round(total_vram, 2)
+            result["available_vram_gb"] = round(available_vram, 2)
+            result["allocated_vram_gb"] = round(allocated_vram, 2)
+            
+            # Estimate VRAM needed for generation
+            # Base model: ~2-4GB, per megapixel: ~0.5-1GB, per 10 steps: ~0.1GB
+            total_pixels = width * height
+            megapixels = total_pixels / 1_000_000
+            
+            # Estimation formula (empirical)
+            base_vram = 2.5  # Base model loaded
+            pixel_vram = megapixels * 0.8  # Per megapixel
+            step_vram = (steps / 50) * 0.3  # Steps overhead
+            
+            estimated_vram = base_vram + pixel_vram + step_vram
+            result["estimated_vram_gb"] = round(estimated_vram, 2)
+            
+            # If DRAM extension is enabled, we can use more
+            if self.dram_config["enabled"]:
+                max_dram = self.dram_config["max_dram_gb"]
+                effective_memory = total_vram + max_dram * 0.3  # DRAM is slower, count 30%
+                result["effective_memory_gb"] = round(effective_memory, 2)
+                
+                if estimated_vram <= effective_memory:
+                    result["can_generate"] = True
+                    result["using_dram"] = estimated_vram > total_vram
+                    return result
+            
+            # Check if we can generate
+            safety_margin = 0.5  # Keep 0.5GB free
+            if estimated_vram > (available_vram - safety_margin):
+                result["can_generate"] = False
+                
+                # Try to find adjusted parameters that would work
+                adjusted = self._find_safe_params(available_vram - safety_margin, width, height, steps)
+                if adjusted:
+                    result["adjusted_params"] = adjusted
+                    result["can_generate"] = True
+                    logger.info(f"VRAM check: adjusted params to {adjusted}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"VRAM check failed: {e}")
+            return result
+    
+    def _find_safe_params(self, available_vram: float, width: int, height: int, steps: int) -> dict:
+        """Find parameters that fit in available VRAM"""
+        base_vram = 2.5
+        
+        # Try reducing resolution first
+        resolutions = [
+            (width, height),
+            (int(width * 0.75), int(height * 0.75)),
+            (512, 768),
+            (512, 512),
+            (384, 512),
+        ]
+        
+        step_options = [steps, min(steps, 35), min(steps, 25), min(steps, 15)]
+        
+        for w, h in resolutions:
+            for s in step_options:
+                megapixels = (w * h) / 1_000_000
+                estimated = base_vram + megapixels * 0.8 + (s / 50) * 0.3
+                
+                if estimated <= available_vram:
+                    # Round to multiples of 64 for optimal performance
+                    w = (w // 64) * 64
+                    h = (h // 64) * 64
+                    return {"width": max(256, w), "height": max(256, h), "steps": s}
+        
+        return None
+    
+    def get_vram_status(self) -> dict:
+        """Get current VRAM status for monitoring"""
+        if self.device != "cuda":
+            return {"device": self.device, "vram_available": False}
+        
+        try:
+            total = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+            allocated = torch.cuda.memory_allocated(0) / (1024**3)
+            cached = torch.cuda.memory_reserved(0) / (1024**3)
+            free = total - allocated
+            
+            return {
+                "device": "cuda",
+                "gpu_name": torch.cuda.get_device_name(0),
+                "total_vram_gb": round(total, 2),
+                "allocated_vram_gb": round(allocated, 2),
+                "cached_vram_gb": round(cached, 2),
+                "free_vram_gb": round(free, 2),
+                "utilization_percent": round((allocated / total) * 100, 1),
+                "dram_extension": self.dram_config
+            }
+        except Exception as e:
+            return {"device": "cuda", "error": str(e)}
+    
+    def cleanup(self):
+        """Clean up resources"""
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
+
+
+# Global instance
+pipeline_service = PipelineService()

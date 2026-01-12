@@ -4,12 +4,11 @@ I.R.I.S. Universal Starter
 ==========================
 Intelligent Rendering & Image Synthesis
 
-Start Web UI, Discord Bot, or both
+Starts Web UI and optionally Discord Bot based on settings.json
 
 Usage:
-    python src/start.py web    # Start Web UI only
-    python src/start.py bot    # Start Discord Bot only
-    python src/start.py all    # Start both services
+    python src/start.py           # Auto-start based on settings.json
+    python src/start.py --no-bot  # Force start without Discord Bot
 
 Press CTRL+C to exit the program gracefully
 """
@@ -19,10 +18,8 @@ import subprocess
 import os
 import signal
 import time
+import json
 from pathlib import Path
-
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 current_processes = []
 shutdown_in_progress = False
@@ -56,7 +53,7 @@ def signal_handler(sig, frame):
     while time.time() - start_wait < 10:
         all_stopped = True
         for process in current_processes:
-            if process.poll() is None:  # Still running
+            if process.poll() is None:
                 all_stopped = False
                 break
         
@@ -92,12 +89,34 @@ def print_banner():
     """
     print(banner)
 
+def load_settings():
+    """Load settings from settings.json"""
+    project_root = Path(__file__).resolve().parents[1]
+    settings_path = project_root / "settings.json"
+    
+    default_settings = {
+        "discordEnabled": False,
+        "dramEnabled": False,
+        "vramThreshold": 6,
+        "maxDram": 8,
+        "nsfwStrength": 2
+    }
+    
+    if settings_path.exists():
+        try:
+            with open(settings_path, 'r') as f:
+                settings = json.load(f)
+                return {**default_settings, **settings}
+        except Exception as e:
+            print(f"[WARN] Could not load settings.json: {e}")
+    
+    return default_settings
+
 def start_web_server():
     """Start FastAPI Web UI Server"""
     print("\n[WEB] Starting Web UI Server...")
     print("      Access at: http://localhost:8000\n")
 
-    # 🔒 WICHTIG: Projekt-Root korrekt setzen
     project_root = Path(__file__).resolve().parents[1]
     os.chdir(project_root)
 
@@ -107,7 +126,6 @@ def start_web_server():
         "src.api.server:app",
         "--host", "0.0.0.0",
         "--port", "8000",
-        # ❗ No --reload
     ])
 
     current_processes.append(process)
@@ -118,29 +136,12 @@ def start_discord_bot():
     print("\n[BOT] Starting Discord Bot...")
     print("      Rich Presence will show generation status\n")
     
-    project_root = Path(__file__).parent.parent
+    project_root = Path(__file__).resolve().parents[1]
     os.chdir(project_root)
     
     process = subprocess.Popen([sys.executable, "src/services/bot.py"])
     current_processes.append(process)
     return process
-
-def start_all():
-    """Start both Web Server and Discord Bot in parallel"""
-    import threading
-    
-    print("\n[IRIS] Starting ALL services...\n")
-    
-    web_thread = threading.Thread(target=start_web_server, daemon=False)
-    web_thread.start()
-    
-    bot_process = start_discord_bot()
-    
-    try:
-        web_thread.join()
-        bot_process.wait()
-    except KeyboardInterrupt:
-        pass
 
 def main():
     """Main entry point"""
@@ -148,29 +149,33 @@ def main():
     
     signal.signal(signal.SIGINT, signal_handler)
     
-    if len(sys.argv) < 2:
-        print("[ERROR] Missing argument\n")
-        print("Usage:")
-        print("  python src/start.py web    # Start Web UI only")
-        print("  python src/start.py bot    # Start Discord Bot only")
-        print("  python src/start.py all    # Start both services")
-        sys.exit(1)
+    # Check for --no-bot flag
+    no_bot = "--no-bot" in sys.argv
     
-    mode = sys.argv[1].lower()
+    # Load settings
+    settings = load_settings()
+    discord_enabled = settings.get("discordEnabled", False) and not no_bot
+    
+    # Show startup info
+    print(f"    [CONFIG] Discord Bot: {'Enabled' if discord_enabled else 'Disabled'}")
+    print(f"    [CONFIG] DRAM Extension: {'Enabled' if settings.get('dramEnabled') else 'Disabled'}")
+    print()
     
     try:
-        if mode == "web":
-            process = start_web_server()
-            process.wait()
-        elif mode == "bot":
-            process = start_discord_bot()
-            process.wait()
-        elif mode == "all":
-            start_all()
-        else:
-            print(f"[ERROR] Unknown mode '{mode}'")
-            print("Valid modes: web, bot, all")
-            sys.exit(1)
+        # Always start web server
+        web_process = start_web_server()
+        
+        # Start Discord bot if enabled
+        bot_process = None
+        if discord_enabled:
+            time.sleep(2)  # Wait a bit for web server to initialize
+            bot_process = start_discord_bot()
+        
+        # Wait for processes
+        web_process.wait()
+        if bot_process:
+            bot_process.wait()
+            
     except KeyboardInterrupt:
         pass
 

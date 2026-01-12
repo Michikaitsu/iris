@@ -39,18 +39,18 @@ This repository provides a **fully functional reference implementation**, not a 
 ### Core Features
 - Modern **Web UI** (Generate, Gallery, Settings)
 - **Multiple AI models** (anime, realistic, pixel art, SDXL)
-- **Text-to-Image** & **Image-to-Image**
+- **Text-to-Image** generation
 - **Real-time progress streaming** (WebSockets)
 - **Prompt & image history logging**
-- **NSFW prompt filtering**
+- **NSFW prompt filtering** (configurable strength)
 - **CPU & low-VRAM GPU support**
 
 ### Advanced Features
 - **DRAM Extension** (system RAM fallback for low VRAM GPUs)
-- **Custom resolutions** (256×256 → 4096×4096)
+- **Custom resolutions** (512×512 → 1080×1920)
 - **CFG scale & sampling control**
-- **Real-ESRGAN upscaling** (2× / 4× / 8×)
-- **Live gallery updates**
+- **Real-ESRGAN & Lanczos upscaling** (2× / 4×)
+- **Live gallery with session history**
 - **Automatic VRAM safety adjustments**
 - **Optional Discord bot integration**
 
@@ -59,13 +59,9 @@ This repository provides a **fully functional reference implementation**, not a 
 ## 🚀 Quick Start
 
 ### Requirements
-```
-
-Python 3.9 – 3.11
-GPU recommended (4 GB VRAM minimum)
-CUDA 11.8+ optional (CPU mode supported)
-
-````
+- Python 3.9 – 3.11
+- GPU recommended (4 GB VRAM minimum)
+- CUDA 11.8+ (optional, CPU mode supported)
 
 ### Installation
 ```bash
@@ -79,19 +75,18 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
-````
+
+# Optional: Copy environment template
+cp .env.example .env
+```
 
 ### Run
-
 ```bash
-# Web UI only
-python src/start.py web
+# Auto-start based on settings.json
+python src/start.py
 
-# Discord bot only
-python src/start.py bot
-
-# Everything
-python src/start.py all
+# Force start without Discord bot
+python src/start.py --no-bot
 ```
 
 🌐 Open: **[http://localhost:8000](http://localhost:8000)**
@@ -101,60 +96,50 @@ python src/start.py all
 ## 🧩 Project Structure
 
 ```
-scrips/
-├── .env                    # Runtime configuration
-├── README.md               # Project overview
-├── LICENSE                 # Project license
-├── CONTRIBUTING.md         # Contribution guidelines
-├── CODE_OF_CONDUCT.md      # Community rules
-├── ROADMAP.md              # Planned features & milestones
-├── VISION.md               # Long-term vision
-├── requirements.txt        # Python dependencies
-│
+iris/
 ├── src/                    # Backend & core logic
-│   ├── api/                # FastAPI routes & WebSockets
-│   │   ├── server.py
-│   │   ├── routes.py
-│   │   └── websockets.py
+│   ├── api/                # FastAPI server & routes
+│   │   ├── server.py       # Main server
+│   │   ├── middleware/     # Rate limiting
+│   │   ├── routes/         # API endpoints
+│   │   └── services/       # NSFW filter, pipeline
 │   ├── core/               # Model loading & generation
-│   │   ├── config.py
-│   │   ├── model_loader.py
-│   │   ├── generator.py
-│   │   └── swinir_arch.py  # Image processing / upscaling
+│   │   ├── config.py       # Configuration
+│   │   ├── model_loader.py # Model management
+│   │   ├── generator.py    # Image generation
+│   │   └── exceptions.py   # Custom exceptions
 │   ├── services/           # Optional services
-│   │   ├── upscaler.py
-│   │   └── bot.py          # Discord integration
+│   │   ├── upscaler.py     # Image upscaling
+│   │   └── bot.py          # Discord bot
 │   ├── utils/              # Utilities
-│   │   ├── logger.py
-│   │   └── file_manager.py
-│   └── start.py            # Unified entry point
+│   │   ├── logger.py       # Logging
+│   │   └── file_manager.py # File operations
+│   └── start.py            # Entry point
 │
 ├── frontend/               # Web UI
-│   ├── index.html
-│   ├── generate.html
-│   ├── gallery.html
-│   └── settings.html
+│   ├── index.html          # Landing page
+│   ├── generate.html       # Generation UI
+│   ├── gallery.html        # Image gallery
+│   └── settings.html       # Settings page
 │
-├── static/                 # Static assets & runtime data
-│   ├── css/
-│   ├── js/
-│   ├── config/
-│   └── data/
+├── static/                 # Static assets
+│   ├── css/                # Stylesheets
+│   ├── js/                 # JavaScript
+│   ├── config/             # Bot config files
+│   └── data/               # Runtime data (history)
 │
-├── assets/                 # UI assets & model thumbnails
-│   ├── fav.ico
-│   └── thumbnails/
+├── assets/                 # UI assets
+│   ├── fav.ico             # Favicon
+│   └── thumbnails/         # Model previews
 │
-├── docs/                   # Documentation website
-│   ├── index.html
-│   ├── SETUP.md
-│   ├── ARTIFACTS.md
-│   ├── screenshots/
-│   └── assets/
-│
+├── tests/                  # Test suite
 ├── outputs/                # Generated images
-├── examples/               # Example images
-└── Logs/                   # Runtime logs
+├── Logs/                   # Runtime logs
+├── docs/                   # Documentation
+│
+├── .env.example            # Environment template
+├── settings.json           # Runtime settings
+└── requirements.txt        # Python dependencies
 ```
 
 > ⚠️ **Note**
@@ -172,20 +157,64 @@ scrips/
 
 ## ⚙️ Configuration
 
-Example `.env` file:
+### settings.json
+```json
+{
+  "dramEnabled": true,
+  "vramThreshold": 6,
+  "maxDram": 8,
+  "nsfwStrength": 2,
+  "discordEnabled": false
+}
+```
 
+### .env (optional)
 ```env
 HOST=0.0.0.0
 PORT=8000
-
 DEFAULT_MODEL=anime_kawai
 
-DRAM_EXTENSION_ENABLED=false
-VRAM_THRESHOLD_GB=6
-MAX_DRAM_GB=16
+# Discord Bot (optional)
+DISCORD_BOT_TOKEN=your_token
+DISCORD_CHANNEL_NEW_IMAGES=channel_id
+DISCORD_CHANNEL_VARIATIONS=channel_id
+DISCORD_CHANNEL_UPSCALED=channel_id
 ```
 
-All services (including Discord) are **optional and isolated**.
+---
+
+## 🖥️ Hardware Reference
+
+| Tier | GPU | VRAM | Notes |
+|------|-----|------|-------|
+| **Minimum** | NVIDIA GTX 1650 | 4 GB | The birthplace. Small models, DRAM Extension recommended. |
+| **Sweet Spot** | **Intel Arc B580** | 12 GB | **Best value for money.** |
+| **Advanced** | NVIDIA RTX 4070 Super | 12 GB | Faster inference, still VRAM-limited. |
+| **Professional** | NVIDIA RTX 3090 Ti / 4090 | 24 GB | No-compromise local AI & SDXL. |
+| **God Tier** | **NVIDIA RTX 5090** | 32 GB | Industrial scale. (Overkill for most) |
+
+> 💡 **Developer Note:** I.R.I.S. was **developed and tested on a GTX 1650**, proving functionality on low-end hardware. We optimize for best hardware per dollar, not expensive branding.
+
+---
+
+## 🔌 API & WebSocket Support
+
+- REST API for generation, gallery, system info
+- WebSocket streams for:
+  - Generation progress
+  - Gallery updates
+  - Multi-page synchronization
+
+Perfect for **custom frontends**, automation, or external clients.
+
+---
+
+## 🛡️ Safety
+
+- Prompt-based NSFW filtering
+- Three strength levels (Minimal, Standard, Strict)
+- Category-based detection
+- Easily extendable or disableable
 
 ---
 
@@ -204,45 +233,7 @@ You are explicitly encouraged to:
 
 ---
 
-## 🖥️ Hardware Reference
-
-| Tier           | GPU                       | VRAM  | Notes                                                |
-| -------------- | ------------------------- | ----- | ---------------------------------------------------- |
-| **Minimum** | NVIDIA GTX 1650           | 4 GB  | The birthplace. Small models only.                   |
-| **Sweet Spot** | **Intel Arc B580** | 12 GB | **Phase 3: Best bang for buck.** |
-| **Advanced** | NVIDIA RTX 4070 Super     | 12 GB | Faster inference, but still VRAM-limited.            |
-| **Professional**| NVIDIA RTX 3090 Ti / 4090 | 24 GB | No-compromise local AI & SDXL.                       |
-| **God Tier** | **NVIDIA RTX 5090** | 32 GB | Industrial scale / Near real-time. (Overkill)        |
-
-> 💡 **Developer Note:** I.R.I.S. is built to give control back to you. We optimize for the best hardware per dollar, not for the most expensive branding.
-> 
-> The engine was **tested on a GTX 1650**, proving functionality on low-end hardware.
-
----
-
-## 🔌 API & WebSocket Support
-
-* REST API for generation, gallery, system info
-* WebSocket streams for:
-
-  * Generation progress
-  * Gallery updates
-  * Multi-page synchronization
-
-Perfect for **custom frontends**, automation, or external clients.
-
----
-
-## 🛡️ Safety
-
-* Prompt-based NSFW filtering
-* Explicit content blocking
-* Category-based detection
-* Easily extendable or disableable
-
----
-
-## 📜 License
+## � License
 
 **Creative Commons Attribution 4.0 (CC BY 4.0)**
 
@@ -268,9 +259,8 @@ I.R.I.S. is not built to compete with cloud AI platforms.
 It exists to **give control back** to developers and creators.
 
 If you value:
-
-* ownership over subscriptions
-* experimentation over lock-in
-* transparency over black boxes
+- ownership over subscriptions
+- experimentation over lock-in
+- transparency over black boxes
 
 then this project is for you.

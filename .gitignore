@@ -1,4 +1,8 @@
-# Python
+# ===========================
+# I.R.I.S. - AI Image Generator
+# ===========================
+
+# === Python ===
 __pycache__/
 *.py[cod]
 *$py.class
@@ -16,137 +20,81 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# Virtual Environment
+# === Virtual Environment ===
 venv/
 ENV/
 env/
-.venv
+.venv/
 
-# IDE
+# === IDE / Editor ===
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
+*.sublime-project
+*.sublime-workspace
 
-# Logs
+# === Environment Variables ===
+.env
+.env.local
+.env.*.local
+
+# === Logs ===
 Logs/*.log
-*.log
+!Logs/.gitkeep
 
-# Outputs (generierte Bilder)
+# === Generated Outputs (Images) ===
 outputs/*.png
 outputs/*.jpg
 outputs/*.jpeg
 outputs/*.webp
 !outputs/.gitkeep
 
-# Sensitive Config Files
-static/config/bot_token.txt
-static/config/bot_id.txt
-static/config/bot_owner_id.txt
-
-# Data Files
-static/data/prompts_history.txt
-static/data/sent_images.txt
-
-# Temporary Files
-*.tmp
-*.bak
-*.swp
-.cache/
-temp/
-
-# OS Files
-Thumbs.db
-.DS_Store
-desktop.ini
-*.lnk
-
-# Model Files
-*.ckpt
-*.safetensors
+# === Model Weights & Cache ===
+weights/
+models/
 *.pth
 *.pt
-models/
-checkpoints/
+*.ckpt
+*.safetensors
+.cache/
+~/.cache/huggingface/
 
-# Node modules
-node_modules/
-package-lock.json
-yarn.lock
+# === User Settings ===
+settings.json
 
-# Environment files
-.env
-.env.local
-```
+# === Static Data (User Generated) ===
+static/data/*.json
+!static/data/.gitkeep
+static/config/*
+!static/config/.gitkeep
 
----
+# === OS Files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
 
-## `.gitkeep` Dateien
+# === Temporary Files ===
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
 
-### `outputs/.gitkeep`
-```
-# This file ensures the outputs directory is tracked by Git
-# All generated images will be ignored but the folder structure remains
-```
-
-### `static/.gitkeep`
-```
-# This file ensures the static directory is tracked by Git
-```
-
-### `Logs/.gitignore`
-```
-# This file ensures the Logs directory is tracked by Git
-# Log files are ignored but the folder structure remains
-```
-
-### `docs/screenshots/.gitkeep`
-```
-# This file ensures the screenshots directory is tracked by Git
-```
-
-### `examples/.gitkeep`
-```
-# This file ensures the examples directory is tracked by Git
-```
-
-### `static/assets/.gitkeep`
-```
-# This file ensures the assets directory is tracked by Git
-```
-
-### `static/config/.gitkeep`
-```
-# This file ensures the config directory is tracked by Git
-# Sensitive config files are ignored but the folder structure remains
-```
-
-### `static/data/.gitkeep`
-```
-# This file ensures the data directory is tracked by Git
-# Data files are ignored but the folder structure remains
-```
-
-### `static/css/.gitkeep`
-```
-# This file ensures the css directory is tracked by Git
-```
-
-### `static/js/.gitkeep`
-```
-# This file ensures the js directory is tracked by Git
-```
-
-### `src/backend/__pycache__/.gitkeep`
-```
-# This file ensures the __pycache__ directory structure is tracked
-# Note: __pycache__ files themselves are ignored
+# === Test Coverage ===
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

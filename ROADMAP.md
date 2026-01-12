@@ -30,7 +30,7 @@ This roadmap reflects intent, not promises.
 - **[IN PROGRESS]** Modular upscaler interface (XeSS implementation)
 - AMD ROCm testing
 - macOS Metal experimentation
-- Total independence from "Green" vendor lock-in 🖕🟢
+- Total independence from vendor lock-in
 
 ---
 
