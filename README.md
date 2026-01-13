@@ -16,9 +16,10 @@ No cloud. No accounts. No telemetry. No vendor lock-in.
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-backend-green)
+![React](https://img.shields.io/badge/React-18-61dafb)
 ![WebSockets](https://img.shields.io/badge/WebSockets-realtime-purple)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey)
-![Status](https://img.shields.io/badge/status-active%20development-orange)
+![Status](https://img.shields.io/badge/status-v1.0.0-brightgreen)
 
 ---
 
@@ -37,22 +38,22 @@ This repository provides a **fully functional reference implementation**, not a 
 ## 🖼️ Feature Overview
 
 ### Core Features
-- Modern **Web UI** (Generate, Gallery, Settings)
+- **Dual Frontend** — Classic HTML UI + Modern React UI
 - **Multiple AI models** (anime, realistic, pixel art, SDXL)
-- **Text-to-Image** generation
-- **Real-time progress streaming** (WebSockets)
-- **Prompt & image history logging**
-- **NSFW prompt filtering** (configurable strength)
-- **CPU & low-VRAM GPU support**
+- **Text-to-Image** generation with real-time progress
+- **WebSocket streaming** for live updates
+- **Persistent prompt history** (server-side)
+- **NSFW prompt filtering** (configurable, can be disabled)
+- **Multi-GPU support** (NVIDIA CUDA, AMD ROCm, Intel Arc XPU, Apple MPS, CPU)
 
 ### Advanced Features
-- **DRAM Extension** (system RAM fallback for low VRAM GPUs)
-- **Custom resolutions** (512×512 → 1080×1920)
-- **CFG scale & sampling control**
-- **Real-ESRGAN & Lanczos upscaling** (2× / 4×)
-- **Live gallery with session history**
-- **Automatic VRAM safety adjustments**
-- **Optional Discord bot integration**
+- **DRAM Extension** — System RAM fallback for low VRAM GPUs (4GB+)
+- **Multiple Upscalers** — Real-ESRGAN, Anime v3, Tile Mode, Lanczos
+- **Custom resolutions** (256×256 → 2048×2048)
+- **Hardware monitoring** — CPU, RAM, GPU power draw
+- **Device switching** — Switch between GPU/CPU at runtime
+- **Discord bot integration** — Auto-post generated images
+- **Discord Rich Presence** — Show generation status
 
 ---
 
@@ -61,7 +62,7 @@ This repository provides a **fully functional reference implementation**, not a 
 ### Requirements
 - Python 3.9 – 3.11
 - GPU recommended (4 GB VRAM minimum)
-- CUDA 11.8+ (optional, CPU mode supported)
+- CUDA 11.8+ / ROCm 5.6+ / oneAPI (optional, CPU mode supported)
 
 ### Installation
 ```bash
@@ -82,14 +83,18 @@ cp .env.example .env
 
 ### Run
 ```bash
-# Auto-start based on settings.json
+# Windows (use venv python directly)
+.\venv\Scripts\python.exe src/start.py
+
+# Linux / macOS
 python src/start.py
 
 # Force start without Discord bot
 python src/start.py --no-bot
 ```
 
-🌐 Open: **[http://localhost:8000](http://localhost:8000)**
+🌐 **HTML Frontend:** [http://localhost:8000](http://localhost:8000)  
+🌐 **React Frontend:** Run `npm run dev` in `frontend-react/` → [http://localhost:3000](http://localhost:3000)
 
 ---
 
@@ -99,59 +104,43 @@ python src/start.py --no-bot
 iris/
 ├── src/                    # Backend & core logic
 │   ├── api/                # FastAPI server & routes
-│   │   ├── server.py       # Main server
+│   │   ├── server.py       # Main server (generation, upscaling, settings)
 │   │   ├── middleware/     # Rate limiting
-│   │   ├── routes/         # API endpoints
-│   │   └── services/       # NSFW filter, pipeline
+│   │   ├── routes/         # API endpoints (system, devices)
+│   │   └── services/       # NSFW filter, pipeline, history, queue
 │   ├── core/               # Model loading & generation
-│   │   ├── config.py       # Configuration
-│   │   ├── model_loader.py # Model management
-│   │   ├── generator.py    # Image generation
-│   │   └── exceptions.py   # Custom exceptions
-│   ├── services/           # Optional services
-│   │   ├── upscaler.py     # Image upscaling
-│   │   └── bot.py          # Discord bot
-│   ├── utils/              # Utilities
-│   │   ├── logger.py       # Logging
-│   │   └── file_manager.py # File operations
+│   ├── services/           # Discord bot
+│   ├── utils/              # Logging, file management
 │   └── start.py            # Entry point
 │
-├── frontend/               # Web UI
+├── frontend/               # Classic HTML Web UI
 │   ├── index.html          # Landing page
 │   ├── generate.html       # Generation UI
 │   ├── gallery.html        # Image gallery
 │   └── settings.html       # Settings page
 │
-├── static/                 # Static assets
+├── frontend-react/         # Modern React Web UI
+│   ├── src/
+│   │   ├── pages/          # HomePage, GeneratePage, GalleryPage, SettingsPage
+│   │   ├── components/     # Reusable components
+│   │   ├── store/          # Zustand state management
+│   │   └── lib/            # API utilities
+│   ├── package.json
+│   └── vite.config.js
+│
+├── static/                 # Static assets & runtime data
 │   ├── css/                # Stylesheets
 │   ├── js/                 # JavaScript
 │   ├── config/             # Bot config files
-│   └── data/               # Runtime data (history)
+│   └── data/               # History (prompts_history.json)
 │
-├── assets/                 # UI assets
-│   ├── fav.ico             # Favicon
-│   └── thumbnails/         # Model previews
-│
-├── tests/                  # Test suite
 ├── outputs/                # Generated images
 ├── Logs/                   # Runtime logs
 ├── docs/                   # Documentation
 │
-├── .env.example            # Environment template
 ├── settings.json           # Runtime settings
 └── requirements.txt        # Python dependencies
 ```
-
-> ⚠️ **Note**
->
-> This project structure was taken **directly from the active development and testing environment**.
-> It reflects the real layout used during day-to-day coding, experimentation and debugging.
->
-> Some folders (e.g. logs, outputs, cached data) are intentionally kept in the repository
-> to show how the system behaves in practice and how components interact at runtime.
-> 
-> The structure is intentionally not over-simplified.
-> It represents a real-world, evolving codebase rather than a polished showcase.
 
 ---
 
@@ -162,11 +151,21 @@ iris/
 {
   "dramEnabled": true,
   "vramThreshold": 6,
-  "maxDram": 8,
+  "maxDram": 16,
+  "nsfwEnabled": true,
   "nsfwStrength": 2,
   "discordEnabled": false
 }
 ```
+
+| Setting | Description |
+|---------|-------------|
+| `dramEnabled` | Use system RAM when VRAM is low |
+| `vramThreshold` | VRAM threshold (GB) to enable DRAM Extension |
+| `maxDram` | Maximum system RAM to use (GB) |
+| `nsfwEnabled` | Enable/disable NSFW prompt filter |
+| `nsfwStrength` | 1=Minimal, 2=Standard, 3=Strict |
+| `discordEnabled` | Auto-start Discord bot |
 
 ### .env (optional)
 ```env

@@ -10,8 +10,9 @@ from src.utils.logger import create_logger
 
 logger = create_logger("NSFWFilter")
 
-# Global filter strength setting (1=Relaxed, 2=Standard, 3=Strict)
+# Global filter settings
 _filter_strength = 2
+_filter_enabled = True
 
 
 def set_filter_strength(strength: int):
@@ -24,6 +25,18 @@ def set_filter_strength(strength: int):
 def get_filter_strength() -> int:
     """Get the current filter strength"""
     return _filter_strength
+
+
+def set_filter_enabled(enabled: bool):
+    """Enable or disable the NSFW filter globally"""
+    global _filter_enabled
+    _filter_enabled = enabled
+    logger.info(f"NSFW filter {'enabled' if enabled else 'disabled'}")
+
+
+def is_filter_enabled() -> bool:
+    """Check if the NSFW filter is enabled"""
+    return _filter_enabled
 
 
 @dataclass

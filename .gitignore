@@ -47,6 +47,8 @@ env/
 # === Logs ===
 Logs/*.log
 !Logs/.gitkeep
+bot_out.txt
+bot_err.txt
 
 # === Generated Outputs (Images) ===
 outputs/*.png
@@ -54,6 +56,12 @@ outputs/*.jpg
 outputs/*.jpeg
 outputs/*.webp
 !outputs/.gitkeep
+
+# === Generated Thumbnails ===
+assets/thumbnails/*.png
+assets/thumbnails/*.jpg
+assets/thumbnails/*.webp
+!assets/thumbnails/.gitkeep
 
 # === Model Weights & Cache ===
 weights/
@@ -98,3 +106,12 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# === Node.js (frontend-react) ===
+frontend-react/node_modules/
+frontend-react/dist/
+frontend-react/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

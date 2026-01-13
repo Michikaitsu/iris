@@ -26,6 +26,7 @@ logger = create_logger("IRISDiscordBot")
 # Paths for data
 SENT_IMAGES_FILE = BASE_DIR / "static" / "data" / "img_send.json"
 PROMPTS_LOG_FILE = BASE_DIR / "static" / "data" / "prompts_history.json"
+BOT_STATUS_FILE = BASE_DIR / "static" / "data" / "bot_status.json"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
 # Configuration functions
@@ -103,11 +104,59 @@ bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 monitor_lock = asyncio.Lock()
 
+# Status tracking
+current_status = "idle"
+generation_count = 0
+
+async def update_bot_status(status: str, details: str = None):
+    """Update the bot's Discord status/activity"""
+    global current_status
+    current_status = status
+    
+    if status == "idle":
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name="for new images 👀"
+        )
+    elif status == "monitoring":
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name=f"outputs folder | {generation_count} sent"
+        )
+    elif status == "sending":
+        activity = discord.Activity(
+            type=discord.ActivityType.playing,
+            name=f"Sending: {details}" if details else "Sending image..."
+        )
+    elif status == "generating":
+        activity = discord.Activity(
+            type=discord.ActivityType.playing,
+            name=f"🎨 Generating..."
+        )
+    elif status == "restarting":
+        activity = discord.Activity(
+            type=discord.ActivityType.playing,
+            name="🔄 Server restarting..."
+        )
+    else:
+        activity = discord.Activity(
+            type=discord.ActivityType.watching,
+            name="I.R.I.S. Server"
+        )
+    
+    try:
+        await bot.change_presence(activity=activity, status=discord.Status.online)
+    except Exception as e:
+        logger.error(f"Failed to update status: {e}")
+
 @bot.event
 async def on_ready():
     logger.discord_bot_ready(bot.user.name)
     logger.info("=" * 70)
     logger.info(f"Connected as: {bot.user.name}")
+    
+    # Set initial status
+    await update_bot_status("idle")
     
     channels = {
         "New": (bot.get_channel(CHANNEL_NEW_IMAGES), CHANNEL_NEW_IMAGES),
@@ -128,8 +177,36 @@ async def on_ready():
         if not monitor_images.is_running():
             monitor_images.start()
             logger.success("Image monitoring started")
+        if not monitor_server_status.is_running():
+            monitor_server_status.start()
+            logger.success("Server status monitoring started")
+        await update_bot_status("monitoring")
     else:
         logger.error("MONITORING NOT STARTED: Please check the .env file.")
+
+@tasks.loop(seconds=2.0)
+async def monitor_server_status():
+    """Monitor server status file for generation updates"""
+    try:
+        if not BOT_STATUS_FILE.exists():
+            return
+        
+        with open(BOT_STATUS_FILE, 'r') as f:
+            status_data = json.load(f)
+        
+        server_status = status_data.get("status", "idle")
+        details = status_data.get("details", "")
+        
+        global current_status
+        if server_status == "generating" and current_status != "generating":
+            await update_bot_status("generating", details)
+        elif server_status == "idle" and current_status == "generating":
+            await update_bot_status("monitoring")
+        elif server_status == "restarting":
+            await update_bot_status("restarting")
+            
+    except Exception as e:
+        pass  # Ignore errors reading status file
 
 @tasks.loop(seconds=3.0)
 async def monitor_images():
@@ -180,6 +257,9 @@ async def monitor_images():
                     )
                     embed.set_footer(text="I.R.I.S. - Intelligent Rendering & Image Synthesis")
                     
+                    # Update status while sending
+                    await update_bot_status("sending", filename)
+                    
                     with open(image_path, 'rb') as f:
                         df = discord.File(f, filename=filename)
                         embed.set_image(url=f"attachment://{filename}")
@@ -190,6 +270,11 @@ async def monitor_images():
                         
                         save_sent_image(filename, msg.jump_url)
                         logger.success(f"Image sent: {filename}")
+                        
+                        # Update generation count and status
+                        global generation_count
+                        generation_count += 1
+                        await update_bot_status("monitoring")
 
                 except Exception as e:
                     logger.error(f"Error sending {filename}: {e}")
@@ -200,9 +285,11 @@ async def monitor_images():
 
 @bot.command(name='iris')
 async def iris_info(ctx):
-    embed = discord.Embed(title="I.R.I.S. Info", color=0x06b6d4)
-    embed.add_field(name="Generated (Session)", value=str(generation_count))
-    embed.add_field(name="Status", value=current_status.capitalize())
+    embed = discord.Embed(title="I.R.I.S. Bot Status", color=0x06b6d4)
+    embed.add_field(name="📊 Sent (Session)", value=str(generation_count), inline=True)
+    embed.add_field(name="📁 Total Tracked", value=str(len(sent_images_dict)), inline=True)
+    embed.add_field(name="🔄 Status", value=current_status.capitalize(), inline=True)
+    embed.set_footer(text="I.R.I.S. - Intelligent Rendering & Image Synthesis")
     await ctx.send(embed=embed)
 
 @bot.command(name='cleanup')
@@ -389,19 +476,33 @@ def main():
         
         def shutdown_handler(signum, frame):
             logger.info("Received shutdown signal, closing bot...")
-            bot.loop.stop()
-            sys.exit(0)
+            try:
+                if bot.loop and bot.loop.is_running():
+                    asyncio.run_coroutine_threadsafe(bot.close(), bot.loop)
+                else:
+                    sys.exit(0)
+            except:
+                sys.exit(0)
         
         signal.signal(signal.SIGINT, shutdown_handler)
         signal.signal(signal.SIGTERM, shutdown_handler)
+        if os.name == 'nt':
+            try:
+                signal.signal(signal.SIGBREAK, shutdown_handler)
+            except:
+                pass
         
         bot.run(BOT_TOKEN)
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
+    except SystemExit:
+        logger.info("Bot shutdown complete")
     except Exception as e:
         logger.error(f"Bot crashed: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
-        pass
+        logger.info("Bot process ending")
 
 if __name__ == "__main__":
     main()

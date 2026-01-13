@@ -69,6 +69,7 @@ class PipelineService:
         self.pipe = None
         self.img2img_pipe = None
         self.device = None
+        self.forced_device = None  # User-forced device (None = auto)
         self.dtype = torch.float32
         self.current_model = None
         self.upscaler = None
@@ -80,12 +81,40 @@ class PipelineService:
             "max_dram_gb": 16
         }
     
-    def detect_device(self):
+    def detect_device(self, force_device: str = None):
         """Detect and configure the best available device"""
-        if torch.cuda.is_available():
+        # If user forced a specific device
+        if force_device:
+            self.forced_device = force_device
+            if force_device == "cpu":
+                self.device = "cpu"
+                self.dtype = torch.float32
+                logger.info("Forced CPU mode by user")
+                return self.device
+            elif force_device == "cuda" and torch.cuda.is_available():
+                self.forced_device = "cuda"
+                # Continue with CUDA detection below
+            elif force_device == "mps" and torch.backends.mps.is_available():
+                self.device = "mps"
+                self.dtype = torch.float32
+                logger.success("Forced Apple Silicon mode")
+                return self.device
+            elif force_device == "xpu" and hasattr(torch, 'xpu') and torch.xpu.is_available():
+                self.device = "xpu"
+                self.dtype = torch.float32
+                logger.success("Forced Intel Arc mode")
+                return self.device
+        
+        # CUDA covers both NVIDIA and AMD ROCm
+        if torch.cuda.is_available() and self.forced_device != "cpu":
             self.device = "cuda"
             gpu_name = torch.cuda.get_device_name(0)
-            logger.success(f"NVIDIA GPU detected: {gpu_name}")
+            
+            # Detect GPU vendor
+            is_amd = "AMD" in gpu_name.upper() or "RADEON" in gpu_name.upper()
+            vendor = "AMD" if is_amd else "NVIDIA"
+            
+            logger.success(f"{vendor} GPU detected: {gpu_name}")
             
             vram_total_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
             logger.info(f"VRAM: {vram_total_gb:.1f}GB")
@@ -96,23 +125,36 @@ class PipelineService:
                 logger.info(f"Auto-enabling DRAM Extension for {vram_total_gb:.1f}GB VRAM card")
                 self.dram_config["enabled"] = True
             
-            has_tensor_cores = any(arch in gpu_name.upper() for arch in ["RTX", "A100", "V100", "T4", "A10", "A40"])
-            if has_tensor_cores:
-                logger.success("Tensor Cores detected! Using float16")
-                self.dtype = torch.float16
+            # Check for tensor cores (NVIDIA only, AMD doesn't have them in the same way)
+            if not is_amd:
+                has_tensor_cores = any(arch in gpu_name.upper() for arch in ["RTX", "A100", "V100", "T4", "A10", "A40"])
+                if has_tensor_cores:
+                    logger.success("Tensor Cores detected! Using float16")
+                    self.dtype = torch.float16
+                else:
+                    logger.warning("No Tensor Cores detected. Using float32")
+                    self.dtype = torch.float32
             else:
-                logger.warning("No Tensor Cores detected. Using float32")
-                self.dtype = torch.float32
+                # AMD GPUs - use float16 for RDNA2+ (RX 6000+, RX 7000+)
+                if any(x in gpu_name.upper() for x in ["RX 6", "RX 7", "RADEON PRO"]):
+                    logger.success("AMD RDNA2+ detected! Using float16")
+                    self.dtype = torch.float16
+                else:
+                    self.dtype = torch.float32
                 
         elif torch.backends.mps.is_available():
             self.device = "mps"
-            self.dtype = torch.float32
-            logger.success("Apple Silicon detected")
+            self.dtype = torch.float32  # MPS works best with float32
+            logger.success("Apple Silicon detected (Metal Performance Shaders)")
             
         elif hasattr(torch, 'xpu') and torch.xpu.is_available():
             self.device = "xpu"
             self.dtype = torch.float32
-            logger.success("Intel Arc GPU detected")
+            try:
+                xpu_name = torch.xpu.get_device_name(0)
+                logger.success(f"Intel Arc GPU detected: {xpu_name}")
+            except:
+                logger.success("Intel Arc GPU detected")
             
         else:
             self.device = "cpu"
@@ -120,6 +162,104 @@ class PipelineService:
             logger.info("Running in CPU mode")
         
         return self.device
+    
+    async def switch_device(self, target_device: str):
+        """Switch between GPU and CPU mode"""
+        valid_devices = ["cuda", "cpu", "mps", "xpu", "auto"]
+        if target_device not in valid_devices:
+            raise ValueError(f"Invalid device: {target_device}. Valid: {valid_devices}")
+        
+        # Check if target device is available
+        if target_device == "cuda" and not torch.cuda.is_available():
+            raise ValueError("CUDA/ROCm is not available on this system")
+        if target_device == "mps" and not torch.backends.mps.is_available():
+            raise ValueError("MPS (Apple Silicon) is not available on this system")
+        if target_device == "xpu":
+            if not (hasattr(torch, 'xpu') and torch.xpu.is_available()):
+                raise ValueError("Intel XPU is not available. Install intel-extension-for-pytorch")
+        
+        old_device = self.device
+        old_model = self.current_model
+        
+        logger.info(f"Switching device from {old_device} to {target_device}...")
+        
+        # Cleanup current pipeline
+        if self.pipe is not None:
+            del self.pipe
+            self.pipe = None
+        if self.img2img_pipe is not None:
+            del self.img2img_pipe
+            self.img2img_pipe = None
+        
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
+        # Re-detect device with forced setting
+        if target_device == "auto":
+            self.forced_device = None
+            self.detect_device()
+        else:
+            self.detect_device(force_device=target_device)
+        
+        # Reload model if one was loaded
+        if old_model:
+            await self.load_model(old_model)
+        
+        logger.success(f"Device switched to {self.device}")
+        return {
+            "success": True,
+            "old_device": old_device,
+            "new_device": self.device,
+            "model_reloaded": old_model is not None
+        }
+    
+    def get_available_devices(self):
+        """Get list of available devices including NVIDIA, AMD, Intel, and Apple"""
+        devices = [{"id": "cpu", "name": "CPU", "available": True, "type": "cpu"}]
+        
+        # NVIDIA CUDA or AMD ROCm (both use cuda backend)
+        if torch.cuda.is_available():
+            gpu_name = torch.cuda.get_device_name(0)
+            vram = torch.cuda.get_device_properties(0).total_memory / 1024**3
+            
+            # Detect if it's AMD (ROCm presents as CUDA)
+            is_amd = "AMD" in gpu_name.upper() or "RADEON" in gpu_name.upper()
+            
+            devices.append({
+                "id": "cuda",
+                "name": f"{gpu_name} ({vram:.1f}GB)",
+                "available": True,
+                "type": "amd" if is_amd else "nvidia"
+            })
+        
+        # Apple Silicon (MPS)
+        if torch.backends.mps.is_available():
+            devices.append({
+                "id": "mps",
+                "name": "Apple Silicon (Metal)",
+                "available": True,
+                "type": "apple"
+            })
+        
+        # Intel Arc (XPU) - requires intel-extension-for-pytorch
+        try:
+            if hasattr(torch, 'xpu') and torch.xpu.is_available():
+                xpu_name = "Intel Arc GPU"
+                try:
+                    xpu_name = torch.xpu.get_device_name(0)
+                except:
+                    pass
+                devices.append({
+                    "id": "xpu",
+                    "name": xpu_name,
+                    "available": True,
+                    "type": "intel"
+                })
+        except Exception:
+            pass
+        
+        return devices
     
     async def load_model(self, model_name: str = "anime_kawai"):
         """Load a specific model"""
@@ -360,8 +500,11 @@ class PipelineService:
     
     def cleanup(self):
         """Clean up resources"""
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        try:
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass  # Ignore CUDA errors during shutdown
         gc.collect()
 
 

@@ -147,7 +147,7 @@
                             <button type="button" onclick="setVisualResolution('512x512', this)" class="aspect-btn active rounded-lg aspect-square flex flex-col items-center justify-center" title="1:1 Square (512x512)">
                                 <div class="aspect-preview w-4 h-4"></div>
                                 <span class="text-xs font-medium leading-none mt-1">1:1</span>
-                                <span class="text-[10px] text-zinc-600 leading-none">512×512</span>
+                                <span class="text-[10px] text-zinc-600 leading-none">512x512</span>
                             </button>
                             <button type="button" onclick="setVisualResolution('512x768', this)" class="aspect-btn rounded-lg aspect-square flex flex-col items-center justify-center" title="2:3 Portrait (512x768)">
                                 <div class="aspect-preview w-3 h-[16px]"></div>
@@ -174,12 +174,12 @@
                                 <span class="text-xs font-medium leading-none mt-1">9:16</span>
                                 <span class="text-[10px] text-zinc-600 leading-none">720×1280</span>
                             </button>
-                            <button type="button" onclick="setVisualResolution('1080x1920', this)" class="aspect-btn rounded-lg aspect-square flex flex-col items-center justify-center" title="9:16 HD (1080x1920)">
-                                <div class="aspect-preview w-2.5 h-[16px]"></div>
-                                <span class="text-xs font-medium leading-none mt-1">FHD</span>
-                                <span class="text-[10px] text-zinc-600 leading-none">1080×1920</span>
+                            <button type="button" onclick="setVisualResolution('1024x1024', this)" class="aspect-btn rounded-lg aspect-square flex flex-col items-center justify-center" title="1:1 HD (1024x1024)">
+                                <div class="aspect-preview w-4 h-4"></div>
+                                <span class="text-xs font-medium leading-none mt-1">HD</span>
+                                <span class="text-[10px] text-zinc-600 leading-none">1024x1024</span>
                             </button>
-                            <button type="button" onclick="toggleCustomRes()" id="customResBtn" class="aspect-btn rounded-lg aspect-square flex flex-col items-center justify-center" title="Custom">
+                            <button type="button" onclick="toggleCustomRes()" id="customResBtn" class="aspect-btn rounded-lg aspect-square flex flex-col items-center justify-center" title="Custom Resolution">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                                 <span class="text-xs font-medium leading-none mt-1">Custom</span>
                                 <span class="text-[10px] text-zinc-600 leading-none">manual</span>
@@ -192,32 +192,41 @@
                             <option value="768x1024">3:4 (768x1024)</option>
                             <option value="1024x768">4:3 (1024x768)</option>
                             <option value="720x1280">9:16 (720x1280)</option>
-                            <option value="1080x1920">9:16 HD (1080x1920)</option>
+                            <option value="1024x1024">1:1 HD (1024x1024)</option>
                             <option value="custom">Custom</option>
                         </select>
+                        <!-- Custom Resolution Panel -->
                         <div id="customResContainer" class="hidden pt-2">
                             <div class="liquid-glass-input border border-iris-border rounded-xl p-3">
+                                <!-- Pixel Count Info -->
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-iris-border/50">
+                                    <span class="text-[10px] text-zinc-500 uppercase font-semibold">Custom Size</span>
+                                    <div class="flex items-center gap-2">
+                                        <span id="pixelCount" class="text-[10px] font-mono text-zinc-400">0.26 MP</span>
+                                        <span id="vramWarning" class="hidden text-[10px] text-amber-400">⚠️ High VRAM</span>
+                                    </div>
+                                </div>
                                 <div class="flex items-center gap-3">
                                     <div class="flex-1">
                                         <label class="text-[10px] text-zinc-500 uppercase font-semibold block mb-1.5">Width</label>
-                                        <input type="number" id="customWidth" value="512" min="256" max="4096" step="64" class="bg-iris-bg border border-iris-border rounded-lg px-3 py-2 w-full text-white text-sm font-mono focus:border-iris-accent focus:outline-none focus:ring-1 focus:ring-iris-accent/30 transition-all">
+                                        <input type="number" id="customWidth" value="512" min="256" max="2048" step="64" class="bg-iris-bg border border-iris-border rounded-lg px-3 py-2 w-full text-white text-sm font-mono focus:border-iris-accent focus:outline-none transition-all" oninput="updateCustomResInfo()">
                                     </div>
                                     <div class="flex flex-col items-center pt-5">
-                                        <span class="text-zinc-500 text-lg">×</span>
+                                        <button type="button" id="aspectLockBtn" onclick="toggleAspectLock()" class="p-1.5 rounded-lg border border-iris-border bg-iris-card text-zinc-500 hover:text-white hover:border-white/20 transition-all" title="Lock Aspect Ratio">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                                        </button>
                                     </div>
                                     <div class="flex-1">
                                         <label class="text-[10px] text-zinc-500 uppercase font-semibold block mb-1.5">Height</label>
-                                        <input type="number" id="customHeight" value="512" min="256" max="4096" step="64" class="bg-iris-bg border border-iris-border rounded-lg px-3 py-2 w-full text-white text-sm font-mono focus:border-iris-accent focus:outline-none focus:ring-1 focus:ring-iris-accent/30 transition-all">
+                                        <input type="number" id="customHeight" value="512" min="256" max="2048" step="64" class="bg-iris-bg border border-iris-border rounded-lg px-3 py-2 w-full text-white text-sm font-mono focus:border-iris-accent focus:outline-none transition-all" oninput="updateCustomResInfo()">
                                     </div>
                                 </div>
+                                <!-- Quick Actions -->
                                 <div class="flex gap-2 mt-3">
                                     <button type="button" onclick="swapCustomDimensions()" class="flex-1 py-1.5 px-3 rounded-lg border border-iris-border bg-iris-card text-zinc-400 hover:text-white hover:border-white/20 transition-all text-xs flex items-center justify-center gap-1.5">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                                         Swap
                                     </button>
-                                    <button type="button" onclick="setCustomPreset(512, 512)" class="py-1.5 px-2.5 rounded-lg border border-iris-border bg-iris-card text-zinc-400 hover:text-white hover:border-white/20 transition-all text-[10px]">512²</button>
-                                    <button type="button" onclick="setCustomPreset(768, 768)" class="py-1.5 px-2.5 rounded-lg border border-iris-border bg-iris-card text-zinc-400 hover:text-white hover:border-white/20 transition-all text-[10px]">768²</button>
-                                    <button type="button" onclick="setCustomPreset(1024, 1024)" class="py-1.5 px-2.5 rounded-lg border border-iris-border bg-iris-card text-zinc-400 hover:text-white hover:border-white/20 transition-all text-[10px]">1024²</button>
                                 </div>
                             </div>
                         </div>
@@ -319,7 +328,7 @@
                                 <label class="text-[10px] uppercase text-zinc-500 font-semibold">Seed</label>
                                 <div class="liquid-glass-input border border-iris-border rounded-xl p-3">
                                     <div class="flex items-center gap-3">
-                                        <input type="number" id="seedInput" placeholder="-1" value="-1" class="flex-1 bg-transparent text-white text-lg font-mono focus:outline-none min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                        <input type="number" id="seedInput" placeholder="Random" class="flex-1 bg-transparent text-white text-lg font-mono focus:outline-none min-w-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                                         <div class="flex gap-1.5">
                                             <button id="seedLockBtn" onclick="toggleSeedLock()" class="w-9 h-9 rounded-lg border border-iris-border bg-iris-card text-zinc-500 hover:text-iris-accent hover:border-iris-accent/50 transition-all flex items-center justify-center" title="Lock Seed">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
@@ -330,22 +339,22 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2 mt-2 pt-2 border-t border-iris-border/50">
-                                        <span class="text-[10px] text-zinc-600">-1 = Random</span>
+                                        <span class="text-[10px] text-zinc-600">Empty = Random each time</span>
                                         <span id="seedLockStatus" class="text-[10px] text-zinc-600 ml-auto hidden">🔒 Locked</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Safety Filter - Original Style -->
+                            <!-- Safety Filter - Dynamic Status -->
                             <div class="pt-4 border-t border-white/10">
                                 <label class="text-[10px] uppercase text-zinc-500 font-semibold flex items-center gap-2 mb-3">
                                     <svg class="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     Safety Filters
                                 </label>
-                                <div class="flex items-center gap-2 bg-iris-card rounded-lg p-2.5 border border-green-500/30">
+                                <div id="nsfwFilterStatus" class="flex items-center gap-2 bg-iris-card rounded-lg p-2.5 border border-green-500/30">
                                     <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
                                     <span class="text-xs font-medium text-white">NSFW Filter</span>
-                                    <span class="text-[9px] bg-green-500/20 text-green-300 px-2 py-0.5 rounded">ALWAYS ACTIVE</span>
+                                    <span id="nsfwFilterBadge" class="text-[9px] bg-green-500/20 text-green-300 px-2 py-0.5 rounded">ACTIVE</span>
                                 </div>
                             </div>
                         </div>
@@ -520,6 +529,139 @@
         let selectedUpscaleScale = 2;
         let timerInterval = null;
         let generationStartTime = null;
+        let aspectLocked = false;
+        let lastAspectRatio = 1;
+        let nsfwFilterEnabled = true;  // Track NSFW filter status
+        
+        // Benchmark System - speichert Generierungszeiten pro Konfiguration
+        let benchmarkData = JSON.parse(localStorage.getItem('iris_benchmark_data') || '{}');
+        
+        function getBenchmarkKey(model, width, height, steps) {
+            // Normalisiere auf Megapixel-Bereiche für bessere Schätzungen
+            const mp = Math.round((width * height) / 100000) / 10; // 0.1 MP Schritte
+            return `${model}_${mp}mp_${steps}s`;
+        }
+        
+        function saveBenchmark(model, width, height, steps, timeSeconds) {
+            const key = getBenchmarkKey(model, width, height, steps);
+            if (!benchmarkData[key]) {
+                benchmarkData[key] = { times: [], avg: 0 };
+            }
+            benchmarkData[key].times.push(timeSeconds);
+            // Behalte nur die letzten 5 Messungen
+            if (benchmarkData[key].times.length > 5) {
+                benchmarkData[key].times.shift();
+            }
+            benchmarkData[key].avg = benchmarkData[key].times.reduce((a, b) => a + b, 0) / benchmarkData[key].times.length;
+            localStorage.setItem('iris_benchmark_data', JSON.stringify(benchmarkData));
+        }
+        
+        function estimateGenerationTime(model, width, height, steps) {
+            const key = getBenchmarkKey(model, width, height, steps);
+            
+            // Exakte Übereinstimmung
+            if (benchmarkData[key] && benchmarkData[key].avg > 0) {
+                return { estimated: benchmarkData[key].avg, confidence: 'high', source: 'exact' };
+            }
+            
+            // Suche ähnliche Konfigurationen
+            const mp = (width * height) / 1000000;
+            let closestTime = null;
+            let closestDiff = Infinity;
+            
+            for (const [k, v] of Object.entries(benchmarkData)) {
+                if (k.startsWith(model + '_') && v.avg > 0) {
+                    const parts = k.split('_');
+                    const benchMp = parseFloat(parts[1]);
+                    const benchSteps = parseInt(parts[2]);
+                    
+                    // Skaliere basierend auf Pixel-Unterschied und Steps
+                    const mpRatio = mp / benchMp;
+                    const stepsRatio = steps / benchSteps;
+                    const scaledTime = v.avg * mpRatio * stepsRatio;
+                    
+                    const diff = Math.abs(mpRatio - 1) + Math.abs(stepsRatio - 1);
+                    if (diff < closestDiff) {
+                        closestDiff = diff;
+                        closestTime = scaledTime;
+                    }
+                }
+            }
+            
+            if (closestTime !== null) {
+                return { estimated: closestTime, confidence: closestDiff < 0.5 ? 'medium' : 'low', source: 'scaled' };
+            }
+            
+            // Fallback: Grobe Schätzung basierend auf typischen Werten
+            // ~0.5-2 Sekunden pro Step bei 512x512, skaliert mit Pixeln
+            const baseTimePerStep = 1.0; // Sekunden
+            const pixelFactor = mp / 0.26; // 512x512 = 0.26 MP
+            const fallbackTime = steps * baseTimePerStep * Math.sqrt(pixelFactor);
+            
+            return { estimated: fallbackTime, confidence: 'guess', source: 'fallback' };
+        }
+        
+        function updateCustomResInfo() {
+            const width = parseInt(document.getElementById('customWidth').value) || 512;
+            const height = parseInt(document.getElementById('customHeight').value) || 512;
+            const mp = (width * height) / 1000000;
+            
+            document.getElementById('pixelCount').textContent = mp.toFixed(2) + ' MP';
+            
+            // VRAM Warnung für hohe Auflösungen
+            const vramWarning = document.getElementById('vramWarning');
+            if (mp > 1.0) {
+                vramWarning.classList.remove('hidden');
+                vramWarning.textContent = mp > 2.0 ? '⚠️ Very High VRAM!' : '⚠️ High VRAM';
+            } else {
+                vramWarning.classList.add('hidden');
+            }
+            
+            // Aspect Ratio Lock
+            if (aspectLocked && lastAspectRatio) {
+                // Wird von den Input-Events gehandhabt
+            }
+        }
+        
+        function toggleAspectLock() {
+            aspectLocked = !aspectLocked;
+            const btn = document.getElementById('aspectLockBtn');
+            const width = parseInt(document.getElementById('customWidth').value) || 512;
+            const height = parseInt(document.getElementById('customHeight').value) || 512;
+            lastAspectRatio = width / height;
+            
+            if (aspectLocked) {
+                btn.classList.add('text-iris-accent', 'border-iris-accent/50', 'bg-iris-accent/10');
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>';
+            } else {
+                btn.classList.remove('text-iris-accent', 'border-iris-accent/50', 'bg-iris-accent/10');
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>';
+            }
+        }
+        
+        // Event Listener für Aspect Ratio Lock
+        document.addEventListener('DOMContentLoaded', () => {
+            const widthInput = document.getElementById('customWidth');
+            const heightInput = document.getElementById('customHeight');
+            
+            widthInput.addEventListener('input', () => {
+                if (aspectLocked && lastAspectRatio) {
+                    const newWidth = parseInt(widthInput.value) || 512;
+                    const newHeight = Math.round(newWidth / lastAspectRatio / 64) * 64;
+                    heightInput.value = Math.max(256, Math.min(2048, newHeight));
+                }
+                updateCustomResInfo();
+            });
+            
+            heightInput.addEventListener('input', () => {
+                if (aspectLocked && lastAspectRatio) {
+                    const newHeight = parseInt(heightInput.value) || 512;
+                    const newWidth = Math.round(newHeight * lastAspectRatio / 64) * 64;
+                    widthInput.value = Math.max(256, Math.min(2048, newWidth));
+                }
+                updateCustomResInfo();
+            });
+        });
 
         const models = [
             { id: 'anime_kawai', name: 'Anime Kawaii Diffusion', image: '/assets/thumbnails/thumbnail-anime-kawaii-diffusion.webp' },
@@ -653,18 +795,13 @@
             element.classList.add('active', 'bg-iris-accent/5');
         }
 
-        function loadPromptHistory() {
+        async function loadPromptHistory() {
             try {
-                const saved = localStorage.getItem('iris_prompt_history');
-                if (saved) { promptHistory = JSON.parse(saved); updatePromptHistoryUI(); }
+                const response = await fetch('/api/prompts-history?limit=50');
+                const data = await response.json();
+                promptHistory = data.history || [];
+                updatePromptHistoryUI();
             } catch (e) { console.error('Error loading history:', e); }
-        }
-
-        function saveToPromptHistory(prompt, negativePrompt, seed, width, height, steps, cfg) {
-            promptHistory.unshift({ prompt, negativePrompt, seed, resolution: `${width}x${height}`, steps, cfg, timestamp: new Date().toISOString() });
-            if (promptHistory.length > 50) promptHistory = promptHistory.slice(0, 50);
-            localStorage.setItem('iris_prompt_history', JSON.stringify(promptHistory));
-            updatePromptHistoryUI();
         }
 
         function updatePromptHistoryUI() {
@@ -675,8 +812,9 @@
                 const item = document.createElement('div');
                 item.className = 'p-2.5 bg-iris-card border border-iris-border rounded-lg cursor-pointer hover:border-iris-accent/30 transition-all flex justify-between items-center group';
                 item.onclick = () => loadFromHistory(index);
-                const date = new Date(entry.timestamp);
-                item.innerHTML = `<div class="flex-1 min-w-0 mr-3"><div class="text-xs text-zinc-400 truncate group-hover:text-iris-accentLight transition">${entry.prompt}</div><div class="flex gap-2 text-[10px] text-zinc-600 mt-1 font-mono"><span>${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span><span>${entry.resolution}</span></div></div><svg class="w-4 h-4 text-iris-accent opacity-0 group-hover:opacity-100 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>`;
+                const date = entry.timestamp ? new Date(entry.timestamp) : new Date();
+                const resolution = entry.width && entry.height ? `${entry.width}x${entry.height}` : (entry.resolution || '512x768');
+                item.innerHTML = `<div class="flex-1 min-w-0 mr-3"><div class="text-xs text-zinc-400 truncate group-hover:text-iris-accentLight transition">${entry.prompt}</div><div class="flex gap-2 text-[10px] text-zinc-600 mt-1 font-mono"><span>${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span><span>${resolution}</span></div></div><svg class="w-4 h-4 text-iris-accent opacity-0 group-hover:opacity-100 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>`;
                 container.appendChild(item);
             });
         }
@@ -684,20 +822,24 @@
         function loadFromHistory(index) {
             const entry = promptHistory[index];
             document.getElementById('promptInput').value = entry.prompt;
-            document.getElementById('negativePromptInput').value = entry.negativePrompt;
-            document.getElementById('seedInput').value = entry.seed;
-            document.getElementById('resSelect').value = entry.resolution;
-            document.getElementById('stepsSlider').value = entry.steps;
-            document.getElementById('stepsValue').textContent = entry.steps;
-            document.getElementById('cfgSlider').value = entry.cfg;
-            document.getElementById('cfgValue').textContent = entry.cfg;
+            document.getElementById('negativePromptInput').value = entry.negativePrompt || '';
+            if (entry.seed) document.getElementById('seedInput').value = entry.seed;
+            const resolution = entry.width && entry.height ? `${entry.width}x${entry.height}` : (entry.resolution || '512x768');
+            document.getElementById('resSelect').value = resolution;
+            if (entry.steps) {
+                document.getElementById('stepsSlider').value = entry.steps;
+                document.getElementById('stepsValue').textContent = entry.steps;
+            }
+            if (entry.cfg) {
+                document.getElementById('cfgSlider').value = entry.cfg;
+                document.getElementById('cfgValue').textContent = entry.cfg;
+            }
             handleResolutionChange();
         }
 
         function clearPromptHistory() {
             if (confirm('Clear all history?')) {
                 promptHistory = [];
-                localStorage.removeItem('iris_prompt_history');
                 updatePromptHistoryUI();
             }
         }
@@ -849,7 +991,9 @@
                     "1girl, anime girl, cyan hair, cat ears, fox tail, white tactical jacket, black pleated skirt, futuristic city, soft bokeh, glowing eyes",
                     "1girl, anime girl, long pink hair, school uniform, sunset sky, rooftop, wind blowing hair, emotional atmosphere",
                     "1girl, anime girl, short silver hair, headphones, oversized hoodie, night city, neon signs, lo-fi vibe",
-                    "1girl, anime girl, twin tails, pastel colors, candy aesthetic, soft lighting, cute expression"
+                    "1girl, anime girl, twin tails, pastel colors, candy aesthetic, soft lighting, cute expression",
+                    "1girl, tomo aizawa, tomboy, short messy black hair, red eyes, energetic expression, school uniform, blue blazer, red ribbon, athletic build, confident pose, school background, bright lighting",
+                    "1girl, tomo aizawa, tomboy girl, spiky black hair, fierce red eyes, casual clothes, sporty outfit, punching pose, dynamic angle, energetic, blush, cute but cool"
                 ],
 
                 cyberpunk: [
@@ -930,20 +1074,53 @@
             const resSelect = document.getElementById('resSelect');
             document.getElementById('customResContainer').classList.toggle('hidden', resSelect.value !== 'custom');
         }
+        
+        function updateTimeEstimate() {
+            const resSelect = document.getElementById('resSelect');
+            let width, height;
+            if (resSelect.value === 'custom') {
+                width = parseInt(document.getElementById('customWidth').value) || 512;
+                height = parseInt(document.getElementById('customHeight').value) || 512;
+            } else {
+                [width, height] = resSelect.value.split('x').map(Number);
+            }
+            const steps = parseInt(document.getElementById('stepsSlider').value) || 35;
+            
+            const estimate = estimateGenerationTime(currentStyle, width, height, steps);
+            const timeStr = estimate.estimated < 60 
+                ? `${Math.round(estimate.estimated)}s` 
+                : `${Math.floor(estimate.estimated / 60)}m ${Math.round(estimate.estimated % 60)}s`;
+            
+            const confidenceIcon = estimate.confidence === 'high' ? '⚡' : 
+                                   estimate.confidence === 'medium' ? '~' : 
+                                   estimate.confidence === 'low' ? '≈' : '?';
+            
+            document.getElementById('estimatedTime').textContent = `${confidenceIcon} ${timeStr} estimated`;
+            
+            // Farbe basierend auf Confidence
+            const el = document.getElementById('estimatedTime');
+            el.className = estimate.confidence === 'high' ? 'text-emerald-400' : 
+                          estimate.confidence === 'medium' ? 'text-zinc-400' : 'text-zinc-500';
+        }
 
         let lastProgressUpdate = 0;
         let simulatedProgress = 0;
         let progressSimulationInterval = null;
         
-        function startProgressSimulation(totalSteps) {
-            // Simuliere Progress basierend auf geschätzter Zeit
-            // Durchschnittlich ~1-2 Sekunden pro Step
-            const estimatedTimePerStep = 1.5; // Sekunden
-            const totalEstimatedTime = totalSteps * estimatedTimePerStep;
+        function startProgressSimulation(totalSteps, width, height) {
+            // Nutze Benchmark-Daten für bessere Schätzung
+            const estimate = estimateGenerationTime(currentStyle, width, height, totalSteps);
+            const totalEstimatedTime = estimate.estimated;
             const updateInterval = 100; // ms
             const progressPerUpdate = 100 / (totalEstimatedTime * 1000 / updateInterval);
             
             simulatedProgress = 0;
+            
+            // Zeige geschätzte Zeit an
+            const confidenceText = estimate.confidence === 'high' ? '' : 
+                                   estimate.confidence === 'medium' ? '~' : 
+                                   estimate.confidence === 'low' ? '~' : '≈';
+            document.getElementById('etaInfo').textContent = `ETA: ${confidenceText}${Math.round(totalEstimatedTime)}s`;
             
             if (progressSimulationInterval) clearInterval(progressSimulationInterval);
             
@@ -977,7 +1154,7 @@
                 
                 document.getElementById('timerLabel').textContent = simulatedProgress < 30 ? 'WARMING UP' : simulatedProgress < 70 ? 'REFINING' : 'FINISHING';
                 
-                // ETA
+                // ETA basierend auf tatsächlicher Zeit
                 if (simulatedProgress > 5) {
                     const remainingProgress = 100 - simulatedProgress;
                     const timePerPercent = elapsed / simulatedProgress;
@@ -1009,12 +1186,11 @@
             if (generationActive && generationStartTime && data.progress !== undefined) {
                 stopProgressSimulation(); // Stoppe Simulation wenn echte Daten kommen
                 
-                const elapsed = (Date.now() - generationStartTime) / 1000;
                 const progress = data.progress || 0;
                 const step = data.step || 0;
                 const totalSteps = data.total_steps || 0;
                 
-                document.getElementById('timerDisplay').textContent = elapsed.toFixed(1) + 's';
+                // Timer wird separat vom timerInterval gesteuert - nicht hier updaten
                 document.getElementById('stepInfo').textContent = `Step ${step}/${totalSteps}`;
                 document.getElementById('progressBar').style.width = `${progress}%`;
                 document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
@@ -1059,6 +1235,13 @@
             if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
             const finalTime = data.generation_time || (Date.now() - generationStartTime) / 1000;
             
+            // Speichere Benchmark-Daten für zukünftige Schätzungen
+            if (window._currentGenSettings) {
+                const s = window._currentGenSettings;
+                saveBenchmark(s.model, s.width, s.height, s.steps, finalTime);
+                console.log(`📊 Benchmark saved: ${s.model} ${s.width}x${s.height} ${s.steps}s = ${finalTime.toFixed(1)}s`);
+            }
+            
             // Update all progress indicators to 100%
             document.getElementById('timerDisplay').textContent = finalTime.toFixed(1) + 's';
             document.getElementById('timerLabel').textContent = 'COMPLETE';
@@ -1075,7 +1258,8 @@
             if (resSelect.value === 'custom') { width = parseInt(document.getElementById('customWidth').value); height = parseInt(document.getElementById('customHeight').value); }
             else [width, height] = resSelect.value.split('x').map(Number);
             
-            saveToPromptHistory(lastPrompt, document.getElementById('negativePromptInput').value, data.seed, width, height, parseInt(document.getElementById('stepsSlider').value), parseFloat(document.getElementById('cfgSlider').value));
+            // Reload prompt history from server (server saves it automatically)
+            loadPromptHistory();
             showCompletedNotification(data.image);
             
             // 2.5 Sekunden Delay damit der Balken auf 100% animieren kann
@@ -1142,18 +1326,21 @@
             lastPrompt = prompt;
             let seed = null;
             const seedInputVal = document.getElementById('seedInput').value;
-            if (seedInputVal !== '-1' && seedInputVal !== '') seed = parseInt(seedInputVal);
+            if (seedInputVal !== '' && seedInputVal.trim() !== '') seed = parseInt(seedInputVal);
             
             const steps = parseInt(document.getElementById('stepsSlider').value);
             
             const settings = {
                 prompt, negative_prompt: document.getElementById('negativePromptInput').value,
                 style: currentStyle, seed, steps: steps,
-                cfg_scale: parseFloat(document.getElementById('cfgSlider').value), width, height, nsfw_filter_enabled: true
+                cfg_scale: parseFloat(document.getElementById('cfgSlider').value), width, height, nsfw_filter_enabled: nsfwFilterEnabled
             };
             
-            // Starte Progress-Simulation
-            startProgressSimulation(steps);
+            // Speichere aktuelle Einstellungen für Benchmark
+            window._currentGenSettings = { model: currentStyle, width, height, steps };
+            
+            // Starte Progress-Simulation mit Benchmark-Daten
+            startProgressSimulation(steps, width, height);
             
             try {
                 ws = new WebSocket(WS_URL);
@@ -1201,7 +1388,7 @@
             imageCounter++;
             document.getElementById('imageCount').textContent = imageCounter;
             document.getElementById('imageInfo').textContent = `Seed: ${data.seed} • ${data.generation_time.toFixed(1)}s • ${data.width}×${data.height}`;
-            if (data.seed && !seedLocked) document.getElementById('seedInput').value = data.seed;
+            // Don't update seed input - keep it empty for random each time (unless locked)
             resetUI();
             addToGallery(data.image, data.filename, lastPrompt, data.seed);
             refreshOutputGallery();
@@ -1304,30 +1491,61 @@
         document.addEventListener('DOMContentLoaded', () => {
             initCustomDropdown();
             loadSavedSettings();
+            loadNsfwFilterStatus();
+            // Set a random seed by default so generation works
             randomSeed();
             refreshOutputGallery();
+            // Poll NSFW filter status every 2 seconds for live sync with React frontend
+            setInterval(loadNsfwFilterStatus, 2000);
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey && document.activeElement.tagName !== 'TEXTAREA' && !generating) generateImage();
             });
         });
+        
+        // Load NSFW Filter status from server
+        async function loadNsfwFilterStatus() {
+            try {
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                if (data.success && data.settings) {
+                    updateNsfwFilterDisplay(data.settings.nsfwEnabled);
+                }
+            } catch (e) {
+                console.log('Could not load NSFW filter status from server');
+            }
+        }
+        
+        // Update NSFW Filter display based on enabled state
+        function updateNsfwFilterDisplay(enabled) {
+            nsfwFilterEnabled = enabled;  // Update global variable
+            const statusDiv = document.getElementById('nsfwFilterStatus');
+            const badge = document.getElementById('nsfwFilterBadge');
+            
+            if (enabled) {
+                statusDiv.className = 'flex items-center gap-2 bg-iris-card rounded-lg p-2.5 border border-green-500/30';
+                statusDiv.innerHTML = `
+                    <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+                    <span class="text-xs font-medium text-white">NSFW Filter</span>
+                    <span id="nsfwFilterBadge" class="text-[9px] bg-green-500/20 text-green-300 px-2 py-0.5 rounded">ACTIVE</span>
+                `;
+            } else {
+                statusDiv.className = 'flex items-center gap-2 bg-iris-card rounded-lg p-2.5 border border-amber-500/30';
+                statusDiv.innerHTML = `
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span class="text-xs font-medium text-white">NSFW Filter</span>
+                    <span id="nsfwFilterBadge" class="text-[9px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">DISABLED</span>
+                `;
+            }
+        }
     </script>
     
     <!-- Upscale Options Popup - placed at body level for proper z-index -->
-    <div id="upscaleOptions" class="liquid-glass border border-iris-border rounded-xl shadow-2xl" style="display: none; position: fixed; z-index: 99999; min-width: 280px;">
+    <div id="upscaleOptions" class="bg-iris-panel border border-iris-border rounded-xl shadow-2xl" style="display: none; position: fixed; z-index: 99999; min-width: 280px;">
         <!-- Method Selection -->
         <div class="p-3 border-b border-iris-border/50">
             <label class="block text-[10px] text-zinc-500 uppercase font-semibold mb-2">Upscale Method</label>
-            <div id="upscaleMethodOptions">
-                <div onclick="selectUpscaleMethod('lanczos', this)" class="upscale-method-option active flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors mb-1.5">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
-                    <div>
-                        <span class="font-medium text-zinc-200 block text-sm">Lanczos</span>
-                        <span class="text-[10px] text-zinc-500">Fast • Good quality</span>
-                    </div>
-                </div>
-                <div onclick="selectUpscaleMethod('realesrgan', this)" class="upscale-method-option flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors">
+            <div id="upscaleMethodOptions" class="space-y-1.5">
+                <div onclick="selectUpscaleMethod('realesrgan', this)" class="upscale-method-option active flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors bg-iris-accent/5">
                     <div class="w-8 h-8 rounded-lg bg-iris-accent/20 flex items-center justify-center">
                         <svg class="w-4 h-4 text-iris-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                     </div>
@@ -1336,8 +1554,35 @@
                         <span class="text-[10px] text-zinc-500">AI Enhanced • Best quality</span>
                     </div>
                 </div>
+                <div onclick="selectUpscaleMethod('anime_v3', this)" class="upscale-method-option flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors">
+                    <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                    </div>
+                    <div>
+                        <span class="font-medium text-zinc-200 block text-sm">Anime v3</span>
+                        <span class="text-[10px] text-zinc-500">Fast • Optimized for anime</span>
+                    </div>
+                </div>
+                <div onclick="selectUpscaleMethod('bsrgan', this)" class="upscale-method-option flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <div>
+                        <span class="font-medium text-zinc-200 block text-sm">Tile Mode</span>
+                        <span class="text-[10px] text-zinc-500">For JPEG/compressed images</span>
+                    </div>
+                </div>
+                <div onclick="selectUpscaleMethod('lanczos', this)" class="upscale-method-option flex items-center gap-3 p-2.5 rounded-lg hover:bg-iris-accent/10 cursor-pointer transition-colors">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <div>
+                        <span class="font-medium text-zinc-200 block text-sm">Lanczos</span>
+                        <span class="text-[10px] text-zinc-500">CPU • Fast fallback</span>
+                    </div>
+                </div>
             </div>
-            <input type="hidden" id="upscaleMethod" value="lanczos">
+            <input type="hidden" id="upscaleMethod" value="realesrgan">
         </div>
         
         <!-- Scale Selection -->

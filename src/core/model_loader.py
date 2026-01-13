@@ -13,7 +13,9 @@ class ModelLoader:
     def __init__(self):
         self.pipe = None
         self.img2img_pipe = None
-        self.upscaler = None
+        self.upscaler = None  # Real-ESRGAN
+        self.upscaler_bsrgan = None  # BSRGAN
+        self.upscaler_anime = None  # Real-ESRGAN Anime v3
         self.swinir_model = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -78,6 +80,9 @@ class ModelLoader:
     async def load_upscaler(self):
         """Load Real-ESRGAN upscaler if available"""
         try:
+            # Apply torchvision compatibility fix
+            self._patch_torchvision_compat()
+            
             from basicsr.archs.rrdbnet_arch import RRDBNet
             from realesrgan import RealESRGANer
             
@@ -104,6 +109,78 @@ class ModelLoader:
             logger.error(f"Failed to load Real-ESRGAN: {e}")
             self.upscaler = None
             return False
+    
+    async def load_upscaler_bsrgan(self):
+        """Load BSRGAN upscaler - optimized for degraded/compressed images (no Tensor Cores needed)"""
+        try:
+            # Apply torchvision compatibility fix
+            self._patch_torchvision_compat()
+            
+            from basicsr.archs.rrdbnet_arch import RRDBNet
+            from realesrgan import RealESRGANer
+            
+            # BSRGAN uses same RRDB architecture but different weights
+            model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+            self.upscaler_bsrgan = RealESRGANer(
+                scale=4,
+                model_path='https://github.com/cszn/KAIR/releases/download/v1.0/BSRGAN.pth',
+                model=model,
+                tile=400,  # Tile for memory efficiency
+                tile_pad=10,
+                pre_pad=0,
+                half=self.dtype == torch.float16,
+                device=self.device
+            )
+            logger.info("BSRGAN upscaler loaded (optimized for degraded images)")
+            return True
+            
+        except Exception as e:
+            logger.warning(f"BSRGAN not available: {e}")
+            self.upscaler_bsrgan = None
+            return False
+    
+    async def load_upscaler_anime_v3(self):
+        """Load Real-ESRGAN Anime Video v3 - best for anime/illustrations (no Tensor Cores needed)"""
+        try:
+            # Apply torchvision compatibility fix
+            self._patch_torchvision_compat()
+            
+            from basicsr.archs.rrdbnet_arch import RRDBNet
+            from realesrgan import RealESRGANer
+            
+            # Anime v3 model - smaller and faster, optimized for anime
+            model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=6, num_grow_ch=32, scale=4)
+            self.upscaler_anime = RealESRGANer(
+                scale=4,
+                model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth',
+                model=model,
+                tile=0,
+                tile_pad=10,
+                pre_pad=0,
+                half=self.dtype == torch.float16,
+                device=self.device
+            )
+            logger.info("Real-ESRGAN Anime v3 upscaler loaded (fast anime upscaling)")
+            return True
+            
+        except Exception as e:
+            logger.warning(f"Real-ESRGAN Anime v3 not available: {e}")
+            self.upscaler_anime = None
+            return False
+    
+    def _patch_torchvision_compat(self):
+        """Fix torchvision >= 0.18 compatibility with basicsr/realesrgan"""
+        try:
+            import torchvision.transforms.functional_tensor
+        except ImportError:
+            import sys
+            import types
+            import torchvision.transforms.functional as F
+            
+            # Create dummy module with required functions
+            functional_tensor = types.ModuleType('torchvision.transforms.functional_tensor')
+            functional_tensor.rgb_to_grayscale = F.rgb_to_grayscale
+            sys.modules['torchvision.transforms.functional_tensor'] = functional_tensor
     
     async def load_swinir(self):
         """Load SwinIR upscaler for superior quality"""
@@ -159,5 +236,7 @@ class ModelLoader:
             "text2img": self.pipe,
             "img2img": self.img2img_pipe,
             "upscaler": self.upscaler,
+            "upscaler_bsrgan": self.upscaler_bsrgan,
+            "upscaler_anime": self.upscaler_anime,
             "swinir": self.swinir_model
         }

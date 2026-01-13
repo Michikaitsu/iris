@@ -99,7 +99,7 @@ class AIGeneratorLogger:
     Uses rotating log files to prevent disk space issues
     """
     
-    def __init__(self, name: str = "AIGenerator"):
+    def __init__(self, name: str = "AIGenerator", log_session: bool = True):
         self.name = name
         self.logs_dir = Path("Logs")
         self.logs_dir.mkdir(exist_ok=True)
@@ -168,7 +168,8 @@ class AIGeneratorLogger:
         
         # Session start
         self.session_start_time = datetime.now()
-        self.log_session_start()
+        if log_session:
+            self.log_session_start()
         
         # Clean up old session logs (keep last 20)
         self._cleanup_old_sessions()
@@ -322,14 +323,18 @@ class AIGeneratorLogger:
 
 # Singleton cache for loggers
 _logger_instances = {}
+_session_logged = False
 
 def create_logger(name: str = "AIGenerator") -> AIGeneratorLogger:
     """
     Factory function to create a logger instance (singleton per name)
     Usage: logger = create_logger()
     """
+    global _session_logged
     if name not in _logger_instances:
-        _logger_instances[name] = AIGeneratorLogger(name)
+        _logger_instances[name] = AIGeneratorLogger(name, log_session=not _session_logged)
+        if not _session_logged:
+            _session_logged = True
     return _logger_instances[name]
 
 

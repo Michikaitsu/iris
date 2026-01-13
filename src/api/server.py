@@ -20,6 +20,10 @@ import subprocess
 import numpy as np
 from datetime import datetime
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Services
 from src.api.services.pipeline import pipeline_service, MODEL_CONFIGS
 from src.api.services.nsfw_filter import check_nsfw_prompt
@@ -64,6 +68,216 @@ generation_stats = {
     "total_time": 0
 }
 
+# Discord Bot Process (global for shutdown handling)
+_discord_bot_process = None
+
+# Bot Status File for communication
+BOT_STATUS_FILE = BASE_DIR / "static" / "data" / "bot_status.json"
+
+def update_bot_status_file(status: str, details: str = None):
+    """Update bot status file for Discord bot to read"""
+    try:
+        BOT_STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        status_data = {
+            "status": status,
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "total_generated": generation_stats["total_images"]
+        }
+        with open(BOT_STATUS_FILE, 'w') as f:
+            json.dump(status_data, f)
+    except Exception as e:
+        logger.error(f"Failed to update bot status file: {e}")
+
+
+def _patch_torchvision_compat():
+    """Fix torchvision >= 0.18 compatibility with basicsr/realesrgan"""
+    try:
+        import torchvision.transforms.functional_tensor
+    except ImportError:
+        import sys
+        import types
+        import torchvision.transforms.functional as F
+        
+        # Create dummy module with required functions
+        functional_tensor = types.ModuleType('torchvision.transforms.functional_tensor')
+        functional_tensor.rgb_to_grayscale = F.rgb_to_grayscale
+        sys.modules['torchvision.transforms.functional_tensor'] = functional_tensor
+        logger.info("Applied torchvision compatibility patch")
+
+
+def _free_vram_for_upscaling():
+    """Free VRAM by temporarily offloading the diffusion model
+    
+    This is crucial for low VRAM GPUs (4-6GB) where the diffusion model
+    takes up most of the available memory.
+    """
+    import gc
+    
+    freed_mb = 0
+    
+    if not torch.cuda.is_available():
+        return freed_mb
+    
+    try:
+        # Get initial VRAM usage
+        initial_allocated = torch.cuda.memory_allocated(0) / (1024**2)
+        
+        # Move diffusion pipeline to CPU if loaded
+        if pipeline_service.pipe is not None:
+            try:
+                pipeline_service.pipe.to("cpu")
+                logger.info("Moved diffusion pipeline to CPU for upscaling")
+            except Exception as e:
+                logger.warning(f"Could not move pipeline to CPU: {e}")
+        
+        if pipeline_service.img2img_pipe is not None:
+            try:
+                pipeline_service.img2img_pipe.to("cpu")
+            except Exception:
+                pass
+        
+        # Clear CUDA cache
+        torch.cuda.empty_cache()
+        gc.collect()
+        
+        # Calculate freed memory
+        final_allocated = torch.cuda.memory_allocated(0) / (1024**2)
+        freed_mb = initial_allocated - final_allocated
+        
+        if freed_mb > 100:
+            logger.info(f"Freed {freed_mb:.0f}MB VRAM for upscaling")
+        
+    except Exception as e:
+        logger.warning(f"VRAM cleanup failed: {e}")
+    
+    return freed_mb
+
+
+def _restore_vram_after_upscaling():
+    """Restore diffusion model to GPU after upscaling"""
+    if not torch.cuda.is_available() or pipeline_service.device != "cuda":
+        return
+    
+    try:
+        if pipeline_service.pipe is not None:
+            pipeline_service.pipe.to(pipeline_service.device)
+            logger.info("Restored diffusion pipeline to GPU")
+        
+        if pipeline_service.img2img_pipe is not None:
+            pipeline_service.img2img_pipe.to(pipeline_service.device)
+            
+    except Exception as e:
+        logger.warning(f"Could not restore pipeline to GPU: {e}")
+
+
+async def _load_upscaler(use_cpu: bool = False, tile_size: int = 256):
+    """Load Real-ESRGAN upscaler
+    
+    Args:
+        use_cpu: Force CPU mode (slower but no VRAM needed)
+        tile_size: Tile size for processing (smaller = less VRAM, 0 = no tiling)
+    """
+    try:
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from realesrgan import RealESRGANer
+        
+        device = "cpu" if use_cpu else pipeline_service.device
+        use_half = False if use_cpu else (pipeline_service.dtype == torch.float16)
+        
+        # Use the general x4plus model (more reliable URL)
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        pipeline_service.upscaler = RealESRGANer(
+            scale=4,
+            model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth',
+            model=model,
+            tile=tile_size,  # Tiling reduces VRAM usage significantly
+            tile_pad=10,
+            pre_pad=0,
+            half=use_half,
+            device=device
+        )
+        mode_str = "CPU" if use_cpu else f"CUDA (tile={tile_size})"
+        logger.success(f"Real-ESRGAN upscaler loaded ({mode_str})")
+    except Exception as e:
+        logger.warning(f"Real-ESRGAN not available: {e}")
+        pipeline_service.upscaler = None
+
+
+async def _load_upscaler_anime_v3(use_cpu: bool = False, tile_size: int = 256):
+    """Load Real-ESRGAN Anime v3 upscaler (faster, optimized for anime)
+    
+    Args:
+        use_cpu: Force CPU mode (slower but no VRAM needed)
+        tile_size: Tile size for processing (smaller = less VRAM, 0 = no tiling)
+    """
+    if hasattr(pipeline_service, 'upscaler_anime') and pipeline_service.upscaler_anime:
+        return  # Already loaded
+    try:
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from realesrgan import RealESRGANer
+        
+        device = "cpu" if use_cpu else pipeline_service.device
+        use_half = False if use_cpu else (pipeline_service.dtype == torch.float16)
+        
+        # Anime v3 uses smaller model (6 blocks instead of 23)
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=6, num_grow_ch=32, scale=4)
+        pipeline_service.upscaler_anime = RealESRGANer(
+            scale=4,
+            model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-animevideov3.pth',
+            model=model,
+            tile=tile_size,  # Tiling reduces VRAM usage
+            tile_pad=10,
+            pre_pad=0,
+            half=use_half,
+            device=device
+        )
+        mode_str = "CPU" if use_cpu else f"CUDA (tile={tile_size})"
+        logger.success(f"Real-ESRGAN Anime v3 upscaler loaded ({mode_str})")
+    except Exception as e:
+        logger.warning(f"Anime v3 upscaler not available: {e}")
+        pipeline_service.upscaler_anime = None
+
+
+async def _load_upscaler_bsrgan(use_cpu: bool = False, tile_size: int = 256):
+    """Load BSRGAN-style upscaler (optimized for compressed/degraded images)
+    
+    Uses Real-ESRGAN x4plus with tile-based processing for better handling
+    of compression artifacts and degraded images.
+    
+    Args:
+        use_cpu: Force CPU mode (slower but no VRAM needed)
+        tile_size: Tile size for processing (smaller = less VRAM)
+    """
+    if hasattr(pipeline_service, 'upscaler_bsrgan') and pipeline_service.upscaler_bsrgan:
+        return  # Already loaded
+    try:
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from realesrgan import RealESRGANer
+        
+        device = "cpu" if use_cpu else pipeline_service.device
+        use_half = False if use_cpu else (pipeline_service.dtype == torch.float16)
+        
+        # Use Real-ESRGAN x4plus with tile processing for degraded images
+        # Tiling helps with compression artifacts by processing smaller regions
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        pipeline_service.upscaler_bsrgan = RealESRGANer(
+            scale=4,
+            model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth',
+            model=model,
+            tile=tile_size if tile_size > 0 else 256,  # Smaller tiles = better for degraded images
+            tile_pad=32,  # More padding for smoother transitions
+            pre_pad=10,
+            half=use_half,
+            device=device
+        )
+        mode_str = "CPU" if use_cpu else f"CUDA (tile={tile_size})"
+        logger.success(f"BSRGAN-style upscaler loaded ({mode_str})")
+    except Exception as e:
+        # Fallback: use same as Real-ESRGAN
+        logger.warning(f"BSRGAN upscaler failed, using Real-ESRGAN as fallback: {e}")
+        pipeline_service.upscaler_bsrgan = pipeline_service.upscaler
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,11 +286,17 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 70)
     
     try:
+        # Apply torchvision compatibility patch for Real-ESRGAN
+        _patch_torchvision_compat()
+        
         # Detect device
         pipeline_service.detect_device()
         
         # Load default model
         await pipeline_service.load_model("anime_kawai")
+        
+        # Pre-load Real-ESRGAN upscaler
+        await _load_upscaler()
         
         # Setup queue callback
         generation_queue.set_process_callback(process_queue_item)
@@ -90,6 +310,23 @@ async def lifespan(app: FastAPI):
         raise
     
     yield
+    
+    # Shutdown: Stop Discord bot if running
+    global _discord_bot_process
+    if _discord_bot_process is not None and _discord_bot_process.poll() is None:
+        logger.info("Stopping Discord bot on shutdown...")
+        try:
+            if os.name == 'nt':
+                subprocess.run(['taskkill', '/F', '/T', '/PID', str(_discord_bot_process.pid)], 
+                              capture_output=True, timeout=5)
+            else:
+                _discord_bot_process.kill()
+                _discord_bot_process.wait(timeout=2)
+            logger.success("Discord bot stopped")
+        except Exception as e:
+            logger.error(f"Error stopping Discord bot: {e}")
+        finally:
+            _discord_bot_process = None
     
     logger.info("Shutting down I.R.I.S. Server...")
     pipeline_service.cleanup()
@@ -267,9 +504,13 @@ async def generate_image_internal(
     if pipeline_service.pipe is None:
         raise ModelNotLoadedError()
     
+    # Update bot status - generating
+    update_bot_status_file("generating", prompt[:50])
+    
     # NSFW check
     nsfw_check = check_nsfw_prompt(prompt, nsfw_filter_enabled)
     if nsfw_check["is_unsafe"]:
+        update_bot_status_file("idle")
         raise NSFWContentError(category=nsfw_check.get("category", "explicit"))
     
     # Validate parameters
@@ -318,19 +559,25 @@ async def generate_image_internal(
     if pipeline_service.device == "cuda":
         torch.cuda.empty_cache()
     
+    # Get the event loop BEFORE entering the thread executor
+    main_loop = asyncio.get_event_loop()
+    
     # Progress callback wrapper for diffusers
     def diffusers_callback(pipe, step_index, timestep, callback_kwargs):
         if progress_callback:
             progress = int((step_index + 1) / steps * 100)
             try:
-                # Call the async callback in a thread-safe way
-                asyncio.get_event_loop().call_soon_threadsafe(
-                    lambda: asyncio.create_task(progress_callback({
-                        "step": step_index + 1,
-                        "total_steps": steps,
-                        "progress": progress,
-                        "timestep": float(timestep) if timestep is not None else 0
-                    }))
+                # Use the main loop reference captured before thread execution
+                main_loop.call_soon_threadsafe(
+                    lambda p=progress, s=step_index, ts=timestep: asyncio.ensure_future(
+                        progress_callback({
+                            "step": s + 1,
+                            "total_steps": steps,
+                            "progress": p,
+                            "timestep": float(ts) if ts is not None else 0
+                        }),
+                        loop=main_loop
+                    )
                 )
             except Exception:
                 pass  # Ignore callback errors
@@ -338,8 +585,6 @@ async def generate_image_internal(
     
     try:
         # Run generation in thread pool to not block the event loop
-        loop = asyncio.get_event_loop()
-        
         # Prepare kwargs with callback if supported
         pipe_kwargs = {
             "prompt": full_prompt,
@@ -355,7 +600,7 @@ async def generate_image_internal(
         if progress_callback:
             pipe_kwargs["callback_on_step_end"] = diffusers_callback
         
-        result = await loop.run_in_executor(
+        result = await main_loop.run_in_executor(
             None,
             lambda: pipeline_service.pipe(**pipe_kwargs)
         )
@@ -396,6 +641,9 @@ async def generate_image_internal(
     # Update stats
     generation_stats["total_images"] += 1
     generation_stats["total_time"] += generation_time
+    
+    # Update bot status - back to idle
+    update_bot_status_file("idle", f"Generated: {filename}")
     
     # Convert to base64
     buffered = io.BytesIO()
@@ -581,10 +829,45 @@ async def api_generate(request: GenerationRequest, req: Request):
 
 
 @app.get("/api/prompts-history")
-async def get_prompts_history():
-    """Legacy endpoint for prompt history"""
-    items = generation_history.get_all(limit=50)
-    return {"history": items}
+async def get_prompts_history(limit: int = 50):
+    """Get prompt history from prompts_history.json"""
+    try:
+        history_file = BASE_DIR / "static" / "data" / "prompts_history.json"
+        if not history_file.exists():
+            return {"history": []}
+        
+        with open(history_file, 'r', encoding='utf-8') as f:
+            all_history = json.load(f)
+        
+        # Deduplicate by prompt and get unique entries (most recent first)
+        seen_prompts = set()
+        unique_history = []
+        
+        # Reverse to get most recent first
+        for entry in reversed(all_history):
+            prompt = entry.get('prompt', '').strip()
+            if prompt and prompt not in seen_prompts:
+                seen_prompts.add(prompt)
+                # Normalize the entry format
+                settings = entry.get('settings', {})
+                unique_history.append({
+                    "prompt": prompt,
+                    "negativePrompt": settings.get('negative_prompt', ''),
+                    "seed": settings.get('seed'),
+                    "steps": settings.get('steps'),
+                    "cfg": settings.get('cfg_scale'),
+                    "width": settings.get('width'),
+                    "height": settings.get('height'),
+                    "style": settings.get('style'),
+                    "timestamp": entry.get('timestamp')
+                })
+                if len(unique_history) >= limit:
+                    break
+        
+        return {"history": unique_history}
+    except Exception as e:
+        logger.error(f"Failed to load prompts history: {e}")
+        return {"history": []}
 
 
 @app.get("/api/stats")
@@ -604,6 +887,7 @@ app_settings = {
     "dramEnabled": False,
     "vramThreshold": 6,
     "maxDram": 16,
+    "nsfwEnabled": True,
     "nsfwStrength": 2,
     "discordEnabled": False
 }
@@ -617,8 +901,9 @@ def load_settings_from_file():
                 app_settings.update(json.load(f))
             logger.info("Settings loaded from file")
             
-            # Apply NSFW filter strength
-            from src.api.services.nsfw_filter import set_filter_strength
+            # Apply NSFW filter settings
+            from src.api.services.nsfw_filter import set_filter_enabled, set_filter_strength
+            set_filter_enabled(app_settings.get("nsfwEnabled", True))
             set_filter_strength(app_settings.get("nsfwStrength", 2))
     except Exception as e:
         logger.warning(f"Could not load settings: {e}")
@@ -640,6 +925,7 @@ class SettingsRequest(BaseModel):
     dramEnabled: Optional[bool] = False
     vramThreshold: Optional[int] = 6
     maxDram: Optional[int] = 16
+    nsfwEnabled: Optional[bool] = True
     nsfwStrength: Optional[int] = 2
     discordEnabled: Optional[bool] = False
 
@@ -658,10 +944,14 @@ async def save_settings(request: SettingsRequest):
     """Save application settings"""
     global app_settings
     
+    # Check if Discord setting changed
+    discord_changed = app_settings.get("discordEnabled") != request.discordEnabled
+    
     app_settings.update({
         "dramEnabled": request.dramEnabled,
         "vramThreshold": request.vramThreshold,
         "maxDram": request.maxDram,
+        "nsfwEnabled": request.nsfwEnabled,
         "nsfwStrength": request.nsfwStrength,
         "discordEnabled": request.discordEnabled
     })
@@ -675,13 +965,17 @@ async def save_settings(request: SettingsRequest):
     else:
         pipeline_service.dram_config["enabled"] = False
     
-    # Apply NSFW filter strength
-    from src.api.services.nsfw_filter import set_filter_strength
+    # Apply NSFW filter settings
+    from src.api.services.nsfw_filter import set_filter_enabled, set_filter_strength
+    set_filter_enabled(request.nsfwEnabled)
     set_filter_strength(request.nsfwStrength)
     strength_names = {1: "Relaxed", 2: "Standard", 3: "Strict"}
-    logger.info(f"NSFW filter strength set to: {strength_names.get(request.nsfwStrength, 'Standard')}")
+    logger.info(f"NSFW filter: {'Enabled' if request.nsfwEnabled else 'Disabled'} (strength: {strength_names.get(request.nsfwStrength, 'Standard')})")
     
-    # Note: Discord Bot is now controlled via /api/discord-bot endpoint
+    # Apply Discord Bot setting - start/stop bot when setting changes
+    if discord_changed:
+        discord_result = await handle_discord_bot(request.discordEnabled)
+        logger.info(f"Discord bot: {'Starting' if request.discordEnabled else 'Stopping'} - {discord_result.get('message', '')}")
     
     # Save to file
     save_settings_to_file()
@@ -693,7 +987,7 @@ async def save_settings(request: SettingsRequest):
 
 
 # Discord Bot Process Management
-_discord_bot_process = None
+# Note: _discord_bot_process is defined at module level for shutdown handling
 
 async def handle_discord_bot(enabled: bool):
     """Start or stop the Discord bot based on settings"""
@@ -707,11 +1001,14 @@ async def handle_discord_bot(enabled: bool):
         
         # Check if bot token is configured
         bot_token = os.getenv('DISCORD_BOT_TOKEN')
+        logger.info(f"Discord bot token from env: {'Found' if bot_token else 'Not found'}")
+        
         if not bot_token:
             token_file = BASE_DIR / "static" / "config" / "bot_token.txt"
             if token_file.exists():
                 with open(token_file, 'r') as f:
                     bot_token = f.read().strip()
+                logger.info("Discord bot token loaded from file")
         
         if not bot_token:
             logger.warning("Discord bot token not configured - bot cannot start")
@@ -721,30 +1018,51 @@ async def handle_discord_bot(enabled: bool):
         try:
             import sys
             bot_script = BASE_DIR / "src" / "services" / "bot.py"
-            _discord_bot_process = subprocess.Popen(
-                [sys.executable, str(bot_script)],
-                cwd=str(BASE_DIR),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+            logger.info(f"Starting Discord bot from: {bot_script}")
+            
+            if not bot_script.exists():
+                logger.error(f"Bot script not found: {bot_script}")
+                return {"success": False, "message": "Bot script not found"}
+            
+            # Start bot in same terminal (output visible), but in new process group
+            # so Ctrl+C doesn't propagate to it
+            if os.name == 'nt':
+                _discord_bot_process = subprocess.Popen(
+                    [sys.executable, str(bot_script)],
+                    cwd=str(BASE_DIR),
+                    stdin=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                )
+            else:
+                _discord_bot_process = subprocess.Popen(
+                    [sys.executable, str(bot_script)],
+                    cwd=str(BASE_DIR),
+                    stdin=subprocess.DEVNULL,
+                    start_new_session=True
+                )
+            
             logger.success(f"Discord bot started (PID: {_discord_bot_process.pid})")
             return {"success": True, "message": "Bot started", "pid": _discord_bot_process.pid}
         except Exception as e:
             logger.error(f"Failed to start Discord bot: {e}")
             return {"success": False, "message": str(e)}
     else:
-        # Stop the bot if running
+        # Force stop the bot
         if _discord_bot_process is not None:
+            pid = _discord_bot_process.pid
+            logger.info(f"Force stopping Discord bot (PID: {pid})...")
             try:
-                _discord_bot_process.terminate()
-                _discord_bot_process.wait(timeout=5)
-                logger.info("Discord bot stopped")
-            except subprocess.TimeoutExpired:
-                _discord_bot_process.kill()
-                logger.warning("Discord bot force-killed")
+                if os.name == 'nt':
+                    # Windows: Force kill immediately with taskkill
+                    subprocess.run(['taskkill', '/F', '/T', '/PID', str(pid)], 
+                                  capture_output=True, timeout=5)
+                else:
+                    # Unix: SIGKILL
+                    _discord_bot_process.kill()
+                    _discord_bot_process.wait(timeout=2)
+                logger.success(f"Discord bot stopped (PID: {pid})")
             except Exception as e:
                 logger.error(f"Error stopping Discord bot: {e}")
-                return {"success": False, "message": str(e)}
             finally:
                 _discord_bot_process = None
         return {"success": True, "message": "Bot stopped"}
@@ -804,8 +1122,16 @@ class UpscaleRequest(BaseModel):
 
 @app.post("/api/upscale")
 async def upscale_image(request: UpscaleRequest):
-    """Upscale an image using various methods"""
+    """Upscale an image using various methods with smart VRAM management
+    
+    Features:
+    - Automatic VRAM cleanup before upscaling (moves diffusion model to CPU)
+    - Tiled processing for lower VRAM usage
+    - CPU fallback if CUDA OOM occurs
+    - Automatic restoration of diffusion model after upscaling
+    """
     from PIL import Image
+    import cv2
     
     # Validate scale
     if request.scale not in [2, 4, 8]:
@@ -816,6 +1142,8 @@ async def upscale_image(request: UpscaleRequest):
     if not image_path.exists():
         raise HTTPException(status_code=404, detail="Image not found")
     
+    vram_freed = False
+    
     try:
         # Load image
         img = Image.open(image_path)
@@ -825,57 +1153,33 @@ async def upscale_image(request: UpscaleRequest):
         method = request.method.lower()
         
         if method == "lanczos":
-            # Simple Lanczos upscaling (always available)
+            # Simple Lanczos upscaling (always available, no GPU needed)
             new_width = img.width * request.scale
             new_height = img.height * request.scale
             upscaled = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
             used_method = "lanczos"
             
         elif method == "realesrgan":
-            # Try Real-ESRGAN, fallback to Lanczos
-            try:
-                from basicsr.archs.rrdbnet_arch import RRDBNet
-                from realesrgan import RealESRGANer
-                import numpy as np
-                import cv2
+            upscaled, used_method = await _upscale_with_smart_vram(
+                img, request.scale, "realesrgan", _load_upscaler, 
+                lambda: pipeline_service.upscaler
+            )
+            vram_freed = True
                 
-                # Initialize Real-ESRGAN
-                model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
-                upsampler = RealESRGANer(
-                    scale=4,
-                    model_path='weights/RealESRGAN_x4plus.pth',
-                    model=model,
-                    tile=0,
-                    tile_pad=10,
-                    pre_pad=0,
-                    half=True if torch.cuda.is_available() else False
-                )
+        elif method == "anime_v3":
+            upscaled, used_method = await _upscale_with_smart_vram(
+                img, request.scale, "anime_v3", _load_upscaler_anime_v3,
+                lambda: pipeline_service.upscaler_anime
+            )
+            vram_freed = True
                 
-                # Convert to numpy
-                img_array = np.array(img)
-                img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+        elif method == "bsrgan":
+            upscaled, used_method = await _upscale_with_smart_vram(
+                img, request.scale, "bsrgan", _load_upscaler_bsrgan,
+                lambda: pipeline_service.upscaler_bsrgan
+            )
+            vram_freed = True
                 
-                # Upscale
-                output, _ = upsampler.enhance(img_array, outscale=request.scale)
-                output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
-                upscaled = Image.fromarray(output)
-                used_method = "realesrgan"
-                
-            except Exception as e:
-                logger.warning(f"Real-ESRGAN failed: {e}, using Lanczos")
-                new_width = img.width * request.scale
-                new_height = img.height * request.scale
-                upscaled = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                used_method = "lanczos"
-                
-        elif method == "swinir":
-            # SwinIR is complex, fallback to Lanczos for now
-            logger.info("SwinIR requested, using Lanczos (SwinIR requires additional setup)")
-            new_width = img.width * request.scale
-            new_height = img.height * request.scale
-            upscaled = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            used_method = "lanczos"
-            
         else:
             # Default to Lanczos
             new_width = img.width * request.scale
@@ -910,3 +1214,104 @@ async def upscale_image(request: UpscaleRequest):
     except Exception as e:
         logger.error(f"Upscale failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+    finally:
+        # Always restore diffusion model to GPU after upscaling
+        if vram_freed:
+            _restore_vram_after_upscaling()
+
+
+async def _upscale_with_smart_vram(img, scale: int, method_name: str, loader_func, get_upscaler_func):
+    """Smart upscaling with VRAM management and fallbacks
+    
+    Strategy:
+    1. Try with tiled processing on GPU (default)
+    2. If OOM: Free VRAM (move diffusion model to CPU) and retry with smaller tiles
+    3. If still OOM: Use CPU mode for upscaling
+    4. If all fails: Fall back to Lanczos
+    """
+    import cv2
+    from PIL import Image
+    
+    img_array = np.array(img)
+    img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+    
+    # Strategy 1: Try with default tiled processing (256px tiles)
+    try:
+        upscaler = get_upscaler_func()
+        if not upscaler:
+            await loader_func(use_cpu=False, tile_size=256)
+            upscaler = get_upscaler_func()
+        
+        if upscaler:
+            output, _ = upscaler.enhance(img_array, outscale=scale)
+            output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
+            return Image.fromarray(output), method_name
+            
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower() or "CUDA" in str(e):
+            logger.warning(f"{method_name} OOM with tiles, trying with VRAM cleanup...")
+        else:
+            raise
+    
+    # Strategy 2: Free VRAM and retry with smaller tiles
+    try:
+        _free_vram_for_upscaling()
+        
+        # Reload upscaler with smaller tiles
+        await loader_func(use_cpu=False, tile_size=128)
+        upscaler = get_upscaler_func()
+        
+        if upscaler:
+            output, _ = upscaler.enhance(img_array, outscale=scale)
+            output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
+            return Image.fromarray(output), method_name
+            
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower() or "CUDA" in str(e):
+            logger.warning(f"{method_name} still OOM, trying CPU mode...")
+        else:
+            raise
+    
+    # Strategy 3: Use CPU mode (slower but guaranteed to work)
+    try:
+        await loader_func(use_cpu=True, tile_size=0)
+        upscaler = get_upscaler_func()
+        
+        if upscaler:
+            logger.info(f"Using CPU mode for {method_name} (this may take a while)...")
+            output, _ = upscaler.enhance(img_array, outscale=scale)
+            output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
+            return Image.fromarray(output), f"{method_name}_cpu"
+            
+    except Exception as e:
+        logger.warning(f"{method_name} CPU mode failed: {e}")
+    
+    # Strategy 4: Fall back to Lanczos
+    logger.warning(f"All {method_name} attempts failed, using Lanczos fallback")
+    new_width = img.width * scale
+    new_height = img.height * scale
+    return img.resize((new_width, new_height), Image.Resampling.LANCZOS), "lanczos"
+
+
+# ============ Server Control ============
+
+@app.post("/api/server/restart")
+async def restart_server():
+    """Trigger server restart by touching a file (for uvicorn --reload)"""
+    import asyncio
+    
+    # Update bot status
+    update_bot_status_file("restarting")
+    
+    logger.info("Server restart requested...")
+    
+    # Touch this file to trigger uvicorn reload
+    async def do_restart():
+        await asyncio.sleep(0.5)  # Give time for response to be sent
+        # Touch server.py to trigger reload
+        Path(__file__).touch()
+    
+    asyncio.create_task(do_restart())
+    
+    return {"success": True, "message": "Server restarting..."}

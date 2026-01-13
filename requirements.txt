@@ -4,15 +4,44 @@ uvicorn[standard]==0.24.0
 websockets==12.0
 slowapi==0.1.9
 
-# AI/ML - NVIDIA CUDA 12.1
+# =============================================================================
+# PyTorch Installation - CHOOSE ONE OPTION BASED ON YOUR GPU
+# =============================================================================
+#
+# OPTION 1: NVIDIA GPU (CUDA 12.1) - Default
+# ------------------------------------------
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+# OPTION 2: NVIDIA GPU (CUDA 11.8) - Older GPUs
+# ---------------------------------------------
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+# OPTION 3: AMD GPU (ROCm 6.0) - Linux only
+# -----------------------------------------
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.0
+#
+# OPTION 4: Intel Arc GPU (XPU)
+# -----------------------------
+# pip install torch torchvision torchaudio intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+#
+# OPTION 5: Apple Silicon (MPS) - macOS
+# -------------------------------------
+# pip install torch torchvision torchaudio
+# (MPS support is built into the default PyTorch for macOS)
+#
+# OPTION 6: CPU Only (No GPU)
+# ---------------------------
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#
+# =============================================================================
+
+# Default: NVIDIA CUDA 12.1 (comment out if using different GPU)
 --extra-index-url https://download.pytorch.org/whl/cu121
 torch>=2.0.0
 torchvision>=0.15.0
 torchaudio>=2.0.0
 
-# Intel Arc Support (Phase 3)
-# intel-extension-for-pytorch  # Uncomment when Intel Arc GPU is available
-
+# Diffusion & AI Libraries
 diffusers==0.30.3
 transformers==4.40.0
 accelerate==0.28.0
@@ -23,6 +52,7 @@ Pillow==10.1.0
 numpy==1.24.3
 loguru==0.7.2
 python-dotenv==1.0.0
+psutil>=5.9.0
 
 # Image processing
 opencv-python>=4.8.0

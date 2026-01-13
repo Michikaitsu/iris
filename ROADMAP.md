@@ -14,41 +14,48 @@ This roadmap reflects intent, not promises.
 
 ---
 
-## 🔄 Phase 2 – Stability & Polish (Finalizing)
+## ✅ Phase 2 – Stability & Polish (Completed)
 
 - Improved error handling
 - Better WebSocket resilience
 - Unified settings system
 - English-only UI consistency
 - Improved documentation
+- React frontend implementation
+- Hardware monitoring (CPU, RAM, GPU)
+- Multiple upscaler methods
 
 ---
 
-## 🧠 Phase 3 – Hardware Expansion (ACTIVE FOCUS)
+## ✅ Phase 3 – Hardware Expansion (Completed)
 
-- **[IN PROGRESS]** Intel ARC / OneAPI support (Targeting Battlemage B580)
-- **[IN PROGRESS]** Modular upscaler interface (XeSS implementation)
-- AMD ROCm testing
-- macOS Metal experimentation
-- Total independence from vendor lock-in
+- **NVIDIA CUDA** — Full support
+- **AMD ROCm** — Experimental support
+- **Intel Arc XPU** — Experimental support (oneAPI)
+- **Apple Silicon MPS** — Experimental support
+- **CPU fallback** — Always available
+- Runtime device switching
+- DRAM Extension for low-VRAM GPUs
 
 ---
 
-## 🌍 Phase 4 – Scaling & Services
+## 🔄 Phase 4 – Scaling & Services (In Progress)
 
 - Multi-user support (optional)
 - Token / quota system (optional)
 - Headless API mode
 - External UI integrations
+- Batch generation queue
 
 ---
 
-## 🔮 Phase 5 – Community Ecosystem
+## 🔮 Phase 5 – Community Ecosystem (Planned)
 
 - Plugin system
 - Community model packs
 - Custom UI themes
 - Reference deployment examples
+- Docker containerization
 
 ---
 

@@ -5,6 +5,12 @@ import subprocess
 import torch
 from fastapi import APIRouter
 
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
 from src.api.services.pipeline import pipeline_service, MODEL_CONFIGS
 from src.utils.logger import create_logger
 
@@ -59,53 +65,88 @@ async def get_system_info():
 
 @router.get("/gpu-info")
 async def get_gpu_info():
-    """Get detailed GPU information"""
+    """Get detailed GPU, CPU, and RAM information"""
     info = {
         "gpu_name": "Unknown",
         "vram_total": 0.0,
         "vram_used": 0.0,
         "vram_free": 0.0,
         "vram_percent": 0.0,
-        "gpu_temp": 0.0,
+        "gpu_temp": 0,
         "power_draw": 0.0,
-        "gpu_utilization": 0.0,
-        "status": "unknown"
+        "gpu_utilization": 0,
+        "status": "unknown",
+        # CPU info
+        "cpu_percent": 0.0,
+        "cpu_freq": 0.0,
+        "cpu_cores": 0,
+        # RAM info
+        "ram_total": 0.0,
+        "ram_used": 0.0,
+        "ram_free": 0.0,
+        "ram_percent": 0.0,
+        # System power (if available)
+        "system_power": None
     }
+    
+    # Get CPU and RAM info using psutil
+    if PSUTIL_AVAILABLE:
+        try:
+            # CPU
+            info["cpu_percent"] = psutil.cpu_percent(interval=0.1)
+            info["cpu_cores"] = psutil.cpu_count(logical=True)
+            cpu_freq = psutil.cpu_freq()
+            if cpu_freq:
+                info["cpu_freq"] = round(cpu_freq.current / 1000, 2)  # GHz
+            
+            # RAM
+            ram = psutil.virtual_memory()
+            info["ram_total"] = round(ram.total / (1024**3), 2)  # GB
+            info["ram_used"] = round(ram.used / (1024**3), 2)  # GB
+            info["ram_free"] = round(ram.available / (1024**3), 2)  # GB
+            info["ram_percent"] = ram.percent
+        except Exception as e:
+            logger.warning(f"psutil error: {e}")
     
     if pipeline_service.device == "cuda":
         try:
             info["gpu_name"] = torch.cuda.get_device_name(0)
-            vram_total = torch.cuda.get_device_properties(0).total_memory / 1024**3
-            vram_used = torch.cuda.memory_allocated(0) / 1024**3
-            vram_free = vram_total - vram_used
-            
-            info["vram_total"] = round(vram_total, 2)
-            info["vram_used"] = round(vram_used, 2)
-            info["vram_free"] = round(vram_free, 2)
-            info["vram_percent"] = round((vram_used / vram_total) * 100, 1) if vram_total > 0 else 0
             info["status"] = "success"
             
-            # GPU stats from nvidia-smi
+            # Get accurate GPU stats from nvidia-smi (real-time values)
             try:
                 result = subprocess.run(
                     ['nvidia-smi', '--query-gpu=temperature.gpu,power.draw,utilization.gpu,memory.used,memory.total', 
                      '--format=csv,noheader,nounits'],
-                    capture_output=True, text=True, timeout=2
+                    capture_output=True, text=True, timeout=3
                 )
-                parts = result.stdout.strip().split(',')
-                if len(parts) >= 5:
-                    info["gpu_temp"] = float(parts[0].strip())
-                    info["power_draw"] = float(parts[1].strip())
-                    info["gpu_utilization"] = float(parts[2].strip())
-                    # Use nvidia-smi values for more accurate VRAM
-                    info["vram_used"] = round(float(parts[3].strip()) / 1024, 2)
-                    info["vram_total"] = round(float(parts[4].strip()) / 1024, 2)
-                    info["load"] = info["gpu_utilization"]
-                    info["temp"] = info["gpu_temp"]
-                    info["memoryUsed"] = float(parts[3].strip())
-                    info["memoryTotal"] = float(parts[4].strip())
-            except:
-                pass
+                if result.returncode == 0:
+                    parts = result.stdout.strip().split(',')
+                    if len(parts) >= 5:
+                        info["gpu_temp"] = int(float(parts[0].strip()))
+                        try:
+                            info["power_draw"] = float(parts[1].strip())
+                        except:
+                            info["power_draw"] = 0.0
+                        info["gpu_utilization"] = int(float(parts[2].strip()))
+                        # VRAM in MB from nvidia-smi, convert to GB
+                        vram_used_mb = float(parts[3].strip())
+                        vram_total_mb = float(parts[4].strip())
+                        info["vram_used"] = round(vram_used_mb / 1024, 2)
+                        info["vram_total"] = round(vram_total_mb / 1024, 2)
+                        info["vram_free"] = round((vram_total_mb - vram_used_mb) / 1024, 2)
+                        info["vram_percent"] = round((vram_used_mb / vram_total_mb) * 100, 1) if vram_total_mb > 0 else 0
+            except FileNotFoundError:
+                # nvidia-smi not found, fallback to PyTorch values
+                vram_total = torch.cuda.get_device_properties(0).total_memory / 1024**3
+                vram_reserved = torch.cuda.memory_reserved(0) / 1024**3
+                info["vram_total"] = round(vram_total, 2)
+                info["vram_used"] = round(vram_reserved, 2)
+                info["vram_free"] = round(vram_total - vram_reserved, 2)
+                info["vram_percent"] = round((vram_reserved / vram_total) * 100, 1) if vram_total > 0 else 0
+            except Exception as e:
+                logger.warning(f"nvidia-smi error: {e}")
+                
         except Exception as e:
             logger.error(f"Error getting GPU info: {e}")
             info["status"] = "error"
@@ -160,3 +201,28 @@ async def get_rpc_status():
         "status": "ready",
         "details": "Ready for requests"
     }
+
+
+@router.get("/devices")
+async def get_available_devices():
+    """Get list of available compute devices"""
+    devices = pipeline_service.get_available_devices()
+    return {
+        "devices": devices,
+        "current_device": pipeline_service.device,
+        "forced_device": pipeline_service.forced_device
+    }
+
+
+@router.post("/device")
+async def switch_device(device: str):
+    """Switch between GPU and CPU mode"""
+    try:
+        result = await pipeline_service.switch_device(device)
+        return result
+    except ValueError as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Failed to switch device: {str(e)}")

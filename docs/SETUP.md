@@ -1,5 +1,5 @@
 # 📖 Setup Guide
-### Complete Installation Guide for I.R.I.S.
+### Complete Installation Guide for I.R.I.S. v1.0.0
 
 *Intelligent Rendering & Image Synthesis*
 
@@ -11,91 +11,149 @@
 
 | Tier | GPU | VRAM | RAM | Storage | Performance |
 |------|-----|------|-----|---------|-------------|
-| **Minimum** | GTX 1650 | 4GB | 8GB | 20GB | ~6 min / 512×768 |
-| **Recommended** | RTX 3060 | 12GB | 16GB | 50GB | ~2 min / 512×768 |
-| **High-End** | RTX 4090 | 24GB | 32GB | 100GB | ~30 sec / 512×768 |
-| **CPU-Only** | 8+ cores | N/A | 16GB+ | 20GB | 30-60 min / image |
+| **Minimum** | GTX 1650 | 4GB | 8GB | 20GB | ~90 sec / 512×768 |
+| **Recommended** | RTX 3060 | 12GB | 16GB | 50GB | ~30 sec / 512×768 |
+| **High-End** | RTX 4090 | 24GB | 32GB | 100GB | ~10 sec / 512×768 |
+| **CPU-Only** | 8+ cores | N/A | 16GB+ | 20GB | 10-30 min / image |
+
+### Supported GPUs
+
+| Vendor | Technology | Status |
+|--------|------------|--------|
+| NVIDIA | CUDA | ✅ Full Support |
+| AMD | ROCm | 🧪 Experimental |
+| Intel | oneAPI (XPU) | 🧪 Experimental |
+| Apple | Metal (MPS) | 🧪 Experimental |
+| CPU | PyTorch CPU | ✅ Always Available |
 
 ### Software
 
 **Required:**
-- Python 3.9, 3.10, or 3.11 (3.12 not yet fully supported)
-- CUDA 11.8 or 12.1 (if using NVIDIA GPU)
+- Python 3.9, 3.10, or 3.11
 - Git
 
 **Optional:**
+- CUDA 11.8+ (NVIDIA)
+- ROCm 5.6+ (AMD)
+- oneAPI (Intel Arc)
+- Node.js 18+ (for React frontend)
 - Discord Account (for bot integration)
 
 ---
 
-## 📦 Prerequisites
+## 📦 Installation
 
-### Install Python
+### 1. Clone Repository
 
-**Windows:**
 ```bash
-winget install Python.Python.3.11
-python --version
+git clone https://github.com/KaiTooast/iris.git
+cd iris
 ```
 
-**Linux (Ubuntu/Debian):**
+### 2. Create Virtual Environment
+
 ```bash
-sudo apt update
-sudo apt install python3.11 python3.11-venv python3-pip
-python3.11 --version
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Linux / macOS
+source venv/bin/activate
 ```
 
-**macOS:**
+### 3. Install Dependencies
+
 ```bash
-brew install python@3.11
-python3.11 --version
+pip install -r requirements.txt
 ```
 
-### Install CUDA (NVIDIA GPU Only)
+### 4. (Optional) Install React Frontend
 
-1. Download from [NVIDIA CUDA Toolkit](https://developer.nvidia.com/cuda-downloads)
-2. Install CUDA 11.8 or 12.1
-3. Verify: `nvcc --version`
+```bash
+cd frontend-react
+npm install
+cd ..
+```
+
+### 5. (Optional) Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env with your settings
+```
 
 ---
 
-## 🚀 Installation
+## 🎮 PyTorch Installation by GPU
+
+### NVIDIA (CUDA)
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/KaiTooast/iris.git
-cd iris
-
-# 2. Create virtual environment
-python -m venv venv
-
-# 3. Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. (Optional) Copy environment template
-cp .env.example .env
-```
-
-### Manual PyTorch Installation (if needed)
-
-```bash
-# For CUDA 11.8:
+# CUDA 11.8
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-# For CUDA 12.1:
+# CUDA 12.1
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
 
-# For CPU only:
+### AMD (ROCm)
+
+```bash
+# ROCm 5.6
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6
+
+# ROCm 6.0
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.0
+```
+
+### Intel Arc (oneAPI)
+
+```bash
+pip install torch torchvision torchaudio intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+
+### CPU Only
+
+```bash
 pip install torch torchvision torchaudio
+```
 
-# Verify
-python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}')"
+### Verify Installation
+
+```bash
+python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}'); print(f'Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
+```
+
+---
+
+## 🎬 Running I.R.I.S.
+
+### Start Server
+
+```bash
+# Windows (recommended)
+.\venv\Scripts\python.exe src/start.py
+
+# Linux / macOS
+python src/start.py
+
+# Without Discord bot
+python src/start.py --no-bot
+```
+
+### Access Web UI
+
+| Frontend | URL | Notes |
+|----------|-----|-------|
+| HTML | http://localhost:8000 | Ready immediately |
+| React | http://localhost:3000 | Requires `npm run dev` |
+
+### Start React Frontend (Optional)
+
+```bash
+cd frontend-react
+npm run dev
 ```
 
 ---
@@ -104,25 +162,25 @@ python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}')"
 
 ### settings.json
 
-Located in project root. Controls runtime behavior:
-
 ```json
 {
   "dramEnabled": true,
   "vramThreshold": 6,
-  "maxDram": 8,
+  "maxDram": 16,
+  "nsfwEnabled": true,
   "nsfwStrength": 2,
   "discordEnabled": false
 }
 ```
 
-| Setting | Description |
-|---------|-------------|
-| `dramEnabled` | Use system RAM when VRAM is low |
-| `vramThreshold` | VRAM threshold (GB) to enable DRAM Extension |
-| `maxDram` | Maximum system RAM to use (GB) |
-| `nsfwStrength` | 1=Minimal, 2=Standard, 3=Strict |
-| `discordEnabled` | Auto-start Discord bot |
+| Setting | Type | Description |
+|---------|------|-------------|
+| `dramEnabled` | bool | Use system RAM when VRAM is low |
+| `vramThreshold` | int | VRAM threshold (GB) to enable DRAM Extension |
+| `maxDram` | int | Maximum system RAM to use (GB) |
+| `nsfwEnabled` | bool | Enable NSFW prompt filter |
+| `nsfwStrength` | int | 1=Minimal, 2=Standard, 3=Strict |
+| `discordEnabled` | bool | Auto-start Discord bot |
 
 ### .env (Optional)
 
@@ -131,8 +189,8 @@ HOST=0.0.0.0
 PORT=8000
 DEFAULT_MODEL=anime_kawai
 
-# Discord Bot (optional)
-DISCORD_BOT_TOKEN=your_bot_token_here
+# Discord Bot
+DISCORD_BOT_TOKEN=your_bot_token
 DISCORD_BOT_ID=your_bot_id
 DISCORD_BOT_OWNER_ID=your_user_id
 
@@ -143,65 +201,27 @@ DISCORD_CHANNEL_UPSCALED=channel_id
 
 ---
 
-## 🎬 Running
+## 🤖 Discord Bot Setup
 
-```bash
-# Make sure venv is activated
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/macOS
-
-# Start (auto-detects Discord from settings.json)
-python src/start.py
-
-# Start without Discord bot
-python src/start.py --no-bot
-```
-
-### First Run
-
-On first run, the AI model will download (~5GB):
-
-```
-Loading Model: Ojimi/anime-kawai-diffusion
-Downloading model components... 100%
-✅ Model loaded successfully!
-```
-
-> ⏰ This only happens once per model.
-
-### Access Web UI
-
-```
-Server ready at http://localhost:8000
-```
-
-🌐 Open: **http://localhost:8000**
-
----
-
-## 🔧 Discord Bot Setup (Optional)
-
-### 1. Create Discord Bot
+### 1. Create Bot
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-2. Click "New Application"
+2. Click "New Application" → Name it
 3. Go to "Bot" tab → "Add Bot"
 4. Copy the **Bot Token**
+5. Enable "Message Content Intent"
 
 ### 2. Get Channel IDs
 
-1. Enable Developer Mode: User Settings → Advanced → Developer Mode
-2. Right-click channel → Copy ID
-3. You need three channels:
-   - New images
-   - Variations
-   - Upscaled images
+1. Discord Settings → Advanced → Enable Developer Mode
+2. Right-click channel → "Copy ID"
+3. You need 3 channels: new-images, variations, upscaled
 
 ### 3. Configure
 
 Add to `.env`:
 ```env
-DISCORD_BOT_TOKEN=your_token_here
+DISCORD_BOT_TOKEN=your_token
 DISCORD_CHANNEL_NEW_IMAGES=123456789
 DISCORD_CHANNEL_VARIATIONS=123456789
 DISCORD_CHANNEL_UPSCALED=123456789
@@ -209,73 +229,77 @@ DISCORD_CHANNEL_UPSCALED=123456789
 
 Set in `settings.json`:
 ```json
-{
-  "discordEnabled": true
-}
+{ "discordEnabled": true }
 ```
 
 ### 4. Invite Bot
 
-1. Go to OAuth2 → URL Generator
-2. Select: `bot`
-3. Permissions: `Send Messages`, `Attach Files`
-4. Copy URL and open in browser
+1. OAuth2 → URL Generator
+2. Scopes: `bot`
+3. Permissions: `Send Messages`, `Attach Files`, `Read Message History`
+4. Copy URL → Open in browser → Select server
 
 ---
 
 ## 🛠️ Troubleshooting
 
 ### "Out of Memory" Error
-- Enable DRAM Extension in Settings
-- Use smaller resolution (512×512)
-- Reduce steps (20-30)
-- Close other GPU applications
+
+1. Enable DRAM Extension in Settings
+2. Use smaller resolution (512×512)
+3. Reduce steps (20-30)
+4. Close other GPU applications
+5. Switch to CPU mode temporarily
 
 ### "CUDA not found"
+
 ```bash
 pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-### Discord Bot Not Sending Images
-- Verify Bot Token is correct
-- Check Channel IDs are valid
-- Ensure bot has permissions: Send Messages, Attach Files
-- Check bot is in the server
+### "No module named 'torch'"
 
-### Model Download Stuck
-- Check internet connection
-- Try again (downloads resume)
-- Manually clear `~/.cache/huggingface` and retry
+Make sure you're using the venv Python:
+```bash
+# Windows
+.\venv\Scripts\python.exe src/start.py
+
+# Not just
+python src/start.py
+```
+
+### Progress Bar Not Updating
+
+- Refresh the page
+- Check WebSocket connection in browser console
+- Restart the server
+
+### Discord Bot Not Working
+
+- Verify token is correct
+- Check channel IDs exist
+- Ensure bot has permissions
+- Check bot is in the server
 
 ---
 
-## 📁 File Structure
+## 📁 File Locations
 
-```
-iris/
-├── src/
-│   ├── api/server.py          # FastAPI server
-│   ├── core/generator.py      # Generation logic
-│   ├── services/bot.py        # Discord bot
-│   └── start.py               # Entry point
-├── frontend/                  # HTML pages
-├── static/
-│   ├── css/                   # Stylesheets
-│   ├── js/                    # JavaScript
-│   └── data/                  # History files
-├── outputs/                   # Generated images
-├── Logs/                      # Log files
-├── settings.json              # Runtime config
-└── .env                       # Environment variables
-```
+| Path | Description |
+|------|-------------|
+| `outputs/` | Generated images |
+| `Logs/` | Server logs |
+| `static/data/prompts_history.json` | Prompt history |
+| `settings.json` | Runtime settings |
+| `.env` | Environment variables |
 
 ---
 
 ## 💬 Support
 
-Still stuck? Open an issue on GitHub with:
+Open an issue on GitHub with:
 - OS and Python version
 - GPU model and VRAM
 - Full error message
