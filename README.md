@@ -66,7 +66,7 @@ This repository provides a **fully functional reference implementation**, not a 
 
 ### Installation
 ```bash
-git clone https://github.com/KaiTooast/iris.git
+git clone https://github.com/Michikaitsu/iris.git
 cd iris
 
 python -m venv venv
